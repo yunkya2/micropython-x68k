@@ -24,37 +24,53 @@
  * THE SOFTWARE.
  */
 
+// Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
+
 #include <stdint.h>
+
+// Board and hardware specific configuration
+#define MICROPY_HW_MCU_NAME                     "m68000"
+#define MICROPY_HW_BOARD_NAME                   "x68k"
+
+#define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_B)
+
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+//#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
 // Python internal features.
 #define MICROPY_ENABLE_GC                       (1)
+#define MICROPY_GCREGS_SETJMP                   (1)
 #define MICROPY_HELPER_REPL                     (1)
 #define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
 
-// Enable u-modules to be imported with their standard name, like sys.
 #define MICROPY_MODULE_WEAK_LINKS               (1)
+#define MICROPY_CAN_OVERRIDE_BUILTINS           (0)
+#define MICROPY_PY_FUNCTION_ATTRS               (1)
 
-// Fine control over Python builtins, classes, modules, etc.
 #define MICROPY_PY_ASYNC_AWAIT                  (0)
 #define MICROPY_PY_BUILTINS_SET                 (0)
 #define MICROPY_PY_ATTRTUPLE                    (0)
 #define MICROPY_PY_COLLECTIONS                  (0)
-#define MICROPY_PY_MATH                         (0)
+#define MICROPY_PY_MATH                         (1)
 #define MICROPY_PY_IO                           (0)
-#define MICROPY_PY_STRUCT                       (0)
+#define MICROPY_PY_STRUCT                       (1)
+#define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_UOS_SEP                      (1)
+#define MICROPY_PY_UOS_SYSTEM                   (1)
+#define MICROPY_VFS                             (0)
 
-#define MICROPY_REPL_EMACS_WORDS_MOVE  (1)
-#define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE (1)
-#define MICROPY_USE_READLINE_HISTORY   (1)
+#define MICROPY_REPL_EMACS_WORDS_MOVE           (1)
+#define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE     (1)
+#define MICROPY_USE_READLINE_HISTORY            (1)
 #ifndef MICROPY_READLINE_HISTORY_SIZE
-#define MICROPY_READLINE_HISTORY_SIZE  (50)
+#define MICROPY_READLINE_HISTORY_SIZE           (50)
 #endif
-
-#define MICROPY_GCREGS_SETJMP                   (1)
 
 #define MICROPY_PORT_ROOT_POINTERS                                        \
     const char *readline_hist[8];                                         \
+
+#define MP_STATE_PORT MP_STATE_VM
 
 // Type definitions for the specific machine.
 
@@ -64,8 +80,3 @@ typedef long mp_off_t;
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
-
-#define MICROPY_HW_BOARD_NAME "x68k"
-#define MICROPY_HW_MCU_NAME "m68000"
-
-#define MP_STATE_PORT MP_STATE_VM
