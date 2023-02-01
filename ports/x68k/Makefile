@@ -3,7 +3,6 @@ include ../../py/mkenv.mk
 CROSS ?= 1
 
 include $(TOP)/py/py.mk
-include $(TOP)/extmod/extmod.mk
 
 ifeq ($(CROSS), 1)
 CROSS_COMPILE ?= m68k-elf-
@@ -24,10 +23,25 @@ SRC_C = \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_generic.c \
 	shared/runtime/pyexec.c \
-	shared/runtime/stdout_helpers.c
+	shared/runtime/stdout_helpers.c \
+	$(SRC_MOD) \
+	$(SHARED_SRC_C_EXTRA)
 
-OBJ += $(PY_CORE_O)
+SRC_CXX += \
+	$(SRC_MOD_CXX)
+
+OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
+# Append any auto-generated sources that are needed by sources listed in
+# SRC_QSTR
+SRC_QSTR_AUTO_DEPS +=
 
 TARGET := $(BUILD)/micropython
 TARGETELF = $(TARGET)

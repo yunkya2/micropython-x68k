@@ -34,8 +34,7 @@
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_B)
 
-#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
-//#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
 // Python internal features.
 #define MICROPY_ENABLE_GC                       (1)
@@ -56,9 +55,23 @@
 #define MICROPY_PY_IO                           (0)
 #define MICROPY_PY_STRUCT                       (1)
 #define MICROPY_PY_MACHINE                      (1)
-#define MICROPY_PY_UOS_SEP                      (1)
-#define MICROPY_PY_UOS_SYSTEM                   (1)
 #define MICROPY_VFS                             (0)
+
+#define MICROPY_PY_UOS                          (0)
+#define MICROPY_PY_UOS_INCLUDEFILE  "ports/x68k/moduos.c"
+#define MICROPY_PY_UOS_ERRNO                    (1)
+#define MICROPY_PY_UOS_SEP                      (1)
+#define MICROPY_PY_UOS_SYSTEM                   (0)
+#define MICROPY_PY_SYS_STDFILES                 (0)
+
+#define MICROPY_PY_UJSON                        (0)
+
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+        /* mp_hal_delay_us(500); */ \
+    } while (0);
 
 #define MICROPY_REPL_EMACS_WORDS_MOVE           (1)
 #define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE     (1)

@@ -37,16 +37,14 @@
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
 
-static char *stack_top;
 #if MICROPY_ENABLE_GC
 static char heap[65536 * 8];
 #endif
 
 int main(int argc, char **argv) {
-    int stack_dummy;
-    stack_top = (char *)&stack_dummy;
-
     mp_stack_ctrl_init();
+    mp_stack_set_limit(8192);           /* TBD */
+
 #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
 #endif
