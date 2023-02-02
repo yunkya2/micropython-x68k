@@ -41,7 +41,10 @@
 static char heap[65536 * 8];
 #endif
 
+extern char _start;
+
 int main(int argc, char **argv) {
+    printf("base addr: %08x\n", (int)&_start);
     mp_stack_ctrl_init();
     mp_stack_set_limit(8192);           /* TBD */
 
