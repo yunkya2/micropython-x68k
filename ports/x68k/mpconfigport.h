@@ -73,6 +73,7 @@
         /* mp_hal_delay_us(500); */ \
     } while (0);
 
+#define MICROPY_REPL_EMACS_KEYS                 (1)
 #define MICROPY_REPL_EMACS_WORDS_MOVE           (1)
 #define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE     (1)
 #define MICROPY_USE_READLINE_HISTORY            (1)

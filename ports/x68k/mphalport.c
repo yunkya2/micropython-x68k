@@ -26,19 +26,15 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <x68k/dos.h>
 
 #include "py/mpconfig.h"
 
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
     unsigned char c = 0;
-
-    int r = read(STDIN_FILENO, &c, 1);
-    if (r == 0) {
-        c = 4;
-    } else if (c == '\n') {
-        c = '\r';
-    }
+    c = _dos_inkey();
+//    printf("[%02x]", c); fflush(stdout);
 
     return c;
 }
