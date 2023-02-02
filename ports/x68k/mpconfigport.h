@@ -32,9 +32,9 @@
 #define MICROPY_HW_MCU_NAME                     "m68000"
 #define MICROPY_HW_BOARD_NAME                   "x68k"
 
-#define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_B)
-
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+
+#define MICROPY_OBJ_BASE_ALIGNMENT  __attribute__((aligned(4)))
 
 // Python internal features.
 #define MICROPY_ENABLE_GC                       (1)
