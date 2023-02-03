@@ -22,6 +22,7 @@ SRC_C = \
 	mphalport.c \
 	vfs_human.c \
 	vfs_human_file.c \
+	modutime.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_generic.c \
 	shared/runtime/pyexec.c \

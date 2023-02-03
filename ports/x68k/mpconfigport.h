@@ -42,6 +42,7 @@
 #define MICROPY_HELPER_REPL                     (1)
 #define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
 
 #define MICROPY_MODULE_WEAK_LINKS               (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS           (0)
@@ -55,6 +56,8 @@
 #define MICROPY_PY_IO                           (1)
 #define MICROPY_PY_STRUCT                       (1)
 #define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_UTIME                        (1)
+#define MICROPY_PY_UTIME_MP_HAL                 (1)
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_POSIX                       (0)
 
@@ -62,12 +65,11 @@
 #define mp_type_textio mp_type_vfs_human_textio
 
 #define MICROPY_PY_UOS                          (1)
-#define MICROPY_PY_UOS_INCLUDEFILE  "ports/x68k/moduos.c"
+#define MICROPY_PY_UOS_INCLUDEFILE              "ports/x68k/moduos.c"
 #define MICROPY_PY_UOS_ERRNO                    (1)
 #define MICROPY_PY_UOS_SEP                      (1)
 #define MICROPY_PY_UOS_SYSTEM                   (0)
 #define MICROPY_PY_UOS_STATVFS                  (0)
-#define MICROPY_PY_SYS_STDFILES                 (0)
 
 #define MICROPY_PY_UJSON                        (0)
 #define MICROPY_PY_USELECT                      (0)
@@ -97,6 +99,8 @@
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
+
+#define MP_SSIZE_MAX (0x7fffffff)
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
