@@ -23,6 +23,8 @@ SRC_C = \
 	vfs_human.c \
 	vfs_human_file.c \
 	modutime.c \
+	modmachine.c \
+	machine_pin.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_generic.c \
 	shared/runtime/pyexec.c \
