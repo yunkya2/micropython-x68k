@@ -60,6 +60,7 @@
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_UTIME                        (1)
 #define MICROPY_PY_UTIME_MP_HAL                 (1)
+#define MICROPY_READER_VFS                      (1)
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_POSIX                       (0)
 
