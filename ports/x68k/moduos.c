@@ -32,8 +32,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#if 0
-
 STATIC mp_obj_t mp_uos_getenv(mp_obj_t var_in) {
     const char *s = getenv(mp_obj_str_get_str(var_in));
     if (s == NULL) {
@@ -48,11 +46,7 @@ STATIC mp_obj_t mp_uos_putenv(mp_obj_t key_in, mp_obj_t value_in) {
     const char *value = mp_obj_str_get_str(value_in);
     int ret;
 
-    #if _WIN32
-    ret = _putenv_s(key, value);
-    #else
     ret = setenv(key, value, 1);
-    #endif
 
     if (ret == -1) {
         mp_raise_OSError(errno);
@@ -65,11 +59,7 @@ STATIC mp_obj_t mp_uos_unsetenv(mp_obj_t key_in) {
     const char *key = mp_obj_str_get_str(key_in);
     int ret;
 
-    #if _WIN32
-    ret = _putenv_s(key, "");
-    #else
     ret = unsetenv(key);
-    #endif
 
     if (ret == -1) {
         mp_raise_OSError(errno);
@@ -78,6 +68,7 @@ STATIC mp_obj_t mp_uos_unsetenv(mp_obj_t key_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_unsetenv_obj, mp_uos_unsetenv);
 
+#if 0
 STATIC mp_obj_t mp_uos_system(mp_obj_t cmd_in) {
     const char *cmd = mp_obj_str_get_str(cmd_in);
 

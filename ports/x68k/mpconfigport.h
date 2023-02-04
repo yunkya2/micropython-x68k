@@ -31,6 +31,7 @@
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "m68000"
 #define MICROPY_HW_BOARD_NAME                   "x68k"
+#define MICROPY_PY_SYS_PLATFORM                 "human68k"
 
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
@@ -50,7 +51,7 @@
 
 #define MICROPY_PY_ASYNC_AWAIT                  (0)
 #define MICROPY_PY_BUILTINS_SET                 (0)
-#define MICROPY_PY_ATTRTUPLE                    (0)
+#define MICROPY_PY_ATTRTUPLE                    (1)
 #define MICROPY_PY_COLLECTIONS                  (0)
 #define MICROPY_PY_MATH                         (1)
 #define MICROPY_PY_IO                           (1)
@@ -67,9 +68,13 @@
 
 #define MICROPY_PY_UOS                          (1)
 #define MICROPY_PY_UOS_INCLUDEFILE              "ports/x68k/moduos.c"
-#define MICROPY_PY_UOS_ERRNO                    (1)
+#define MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV   (1)
 #define MICROPY_PY_UOS_SEP                      (1)
+#define MICROPY_PY_UOS_SYNC                     (0)
 #define MICROPY_PY_UOS_SYSTEM                   (0)
+#define MICROPY_PY_UOS_UNAME                    (1)
+#define MICROPY_PY_UOS_URANDOM                  (0)
+#define MICROPY_PY_UOS_ERRNO                    (1)
 #define MICROPY_PY_UOS_STATVFS                  (0)
 
 #define MICROPY_PY_UJSON                        (0)
