@@ -36,6 +36,8 @@
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/readline/readline.h"
+#include "extmod/vfs.h"
+#include "vfs_human.h"
 
 #if MICROPY_ENABLE_GC
 static char heap[65536 * 8];
@@ -52,6 +54,16 @@ int main(int argc, char **argv) {
     gc_init(heap, heap + sizeof(heap));
 #endif
     mp_init();
+
+    {
+        // Mount the host FS at the root of our internal VFS
+        mp_obj_t args[2] = {
+            mp_type_vfs_human.make_new(&mp_type_vfs_human, 0, 0, NULL),
+            MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
+        };
+        mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
+        MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
+    }
 
     pyexec_friendly_repl();
 
@@ -78,9 +90,11 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
     mp_raise_OSError(MP_ENOENT);
 }
 
+#if !MICROPY_VFS
 mp_import_stat_t mp_import_stat(const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
+#endif
 
 void NORETURN __fatal_error(const char *msg) {
     while (1) {

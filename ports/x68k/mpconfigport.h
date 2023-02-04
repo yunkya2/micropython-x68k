@@ -52,19 +52,25 @@
 #define MICROPY_PY_ATTRTUPLE                    (0)
 #define MICROPY_PY_COLLECTIONS                  (0)
 #define MICROPY_PY_MATH                         (1)
-#define MICROPY_PY_IO                           (0)
+#define MICROPY_PY_IO                           (1)
 #define MICROPY_PY_STRUCT                       (1)
 #define MICROPY_PY_MACHINE                      (1)
-#define MICROPY_VFS                             (0)
+#define MICROPY_VFS                             (1)
+#define MICROPY_VFS_POSIX                       (0)
 
-#define MICROPY_PY_UOS                          (0)
+#define mp_type_fileio mp_type_vfs_human_fileio
+#define mp_type_textio mp_type_vfs_human_textio
+
+#define MICROPY_PY_UOS                          (1)
 #define MICROPY_PY_UOS_INCLUDEFILE  "ports/x68k/moduos.c"
 #define MICROPY_PY_UOS_ERRNO                    (1)
 #define MICROPY_PY_UOS_SEP                      (1)
 #define MICROPY_PY_UOS_SYSTEM                   (0)
+#define MICROPY_PY_UOS_STATVFS                  (0)
 #define MICROPY_PY_SYS_STDFILES                 (0)
 
 #define MICROPY_PY_UJSON                        (0)
+#define MICROPY_PY_USELECT                      (0)
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \

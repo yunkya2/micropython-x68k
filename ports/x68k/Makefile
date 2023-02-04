@@ -20,6 +20,8 @@ LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 SRC_C = \
 	main.c \
 	mphalport.c \
+	vfs_human.c \
+	vfs_human_file.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_generic.c \
 	shared/runtime/pyexec.c \
