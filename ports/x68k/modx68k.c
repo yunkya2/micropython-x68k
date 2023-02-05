@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/obj.h"
+#include "py/objarray.h"
 
 STATIC void to_super(void)
 {
@@ -59,15 +60,23 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_x68k_crtmod_obj, 1, 2, mp_x68k_crt
 
 STATIC mp_obj_t mp_x68k_gvram(void) {
     to_super();
-    return mp_obj_new_bytearray_by_ref(0x200000, (void *)0xc00000);
+    return mp_obj_new_memoryview('B'|MP_OBJ_ARRAY_TYPECODE_FLAG_RW,
+                                 0x200000, (void *)0xc00000);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_x68k_gvram_obj, mp_x68k_gvram);
 
 STATIC mp_obj_t mp_x68k_tvram(void) {
     to_super();
-    return mp_obj_new_bytearray_by_ref(0x80000, (void *)0xe00000);
+    return mp_obj_new_memoryview('B'|MP_OBJ_ARRAY_TYPECODE_FLAG_RW,
+                                 0x80000, (void *)0xe00000);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_x68k_tvram_obj, mp_x68k_tvram);
+
+STATIC mp_obj_t mp_x68k_fontrom(void) {
+    to_super();
+    return mp_obj_new_memoryview('B', 0xc0000, (void *)0xf00000);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_x68k_fontrom_obj, mp_x68k_fontrom);
 
 STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_x68k) },
@@ -75,6 +84,7 @@ STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_crtmod), MP_ROM_PTR(&mp_x68k_crtmod_obj) },
     { MP_ROM_QSTR(MP_QSTR_gvram), MP_ROM_PTR(&mp_x68k_gvram_obj) },
     { MP_ROM_QSTR(MP_QSTR_tvram), MP_ROM_PTR(&mp_x68k_tvram_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fontrom), MP_ROM_PTR(&mp_x68k_fontrom_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_x68k_globals, mp_module_x68k_globals_table);
