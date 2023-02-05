@@ -64,3 +64,7 @@ $(TARGET): $(OBJ)
 	$(Q)$(SIZE) $(TARGETELF)
 
 include $(TOP)/py/mkrules.mk
+
+release: all
+	cp README.md build
+	(cd build; zip micropython-$(shell git describe).zip micropython.x README.md)
