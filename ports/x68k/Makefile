@@ -26,6 +26,7 @@ SRC_C = \
 	modmachine.c \
 	machine_pin.c \
 	modx68k.c \
+	modx68kiocs.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_generic.c \
 	shared/runtime/pyexec.c \
