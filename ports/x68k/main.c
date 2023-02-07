@@ -44,6 +44,7 @@
 #include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "vfs_human.h"
+#include "mphalport.h"
 
 #ifndef PATH_MAX
 #define PATH_MAX        4096
@@ -368,7 +369,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
     if (ret == NOTHING_EXECUTED || inspect) {
         // prompt_read_history();
+        mp_hal_setfnckey();
         ret = pyexec_friendly_repl();
+        mp_hal_restorefnckey();
         // prompt_write_history();
     }
 

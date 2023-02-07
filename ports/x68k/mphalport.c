@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mpconfig.h"
+#include "py/misc.h"
 
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
@@ -83,4 +84,35 @@ void mp_hal_delay_ms(mp_uint_t ms) {
 
 void mp_hal_delay_us(mp_uint_t us) {
     mp_hal_delay_ms(us / 1000);
+}
+
+STATIC struct {
+    int fno;
+    const char *keydef;
+} setfnckey[] =
+{
+    24, "\x04",     /* DEL   -- ^D */
+    25, "\x10",     /* UP    -- ^P */
+    26, "\x02",     /* LEFT  -- ^B */
+    27, "\x06",     /* RIGHT -- ^F */
+    28, "\x0e",     /* DOWN  -- ^N */
+    29, "\x15",     /* CLR   -- ^U */
+    31, "\x01",     /* HOME  -- ^A */
+};
+
+STATIC char savefnckey[MP_ARRAY_SIZE(setfnckey)][6];
+
+void mp_hal_setfnckey(void) {
+    int i;
+    for (i = 0; i < MP_ARRAY_SIZE(setfnckey); i++) {
+        _dos_fnckeygt(setfnckey[i].fno, savefnckey[i]);
+        _dos_fnckeyst(setfnckey[i].fno, setfnckey[i].keydef);
+    }
+}
+
+void mp_hal_restorefnckey(void) {
+    int i;
+    for (i = 0; i < MP_ARRAY_SIZE(setfnckey); i++) {
+        _dos_fnckeyst(setfnckey[i].fno, savefnckey[i]);
+    }
 }
