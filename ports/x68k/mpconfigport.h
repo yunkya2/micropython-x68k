@@ -56,6 +56,8 @@
 #define MICROPY_PY_MATH                         (1)
 #define MICROPY_PY_IO                           (1)
 #define MICROPY_PY_STRUCT                       (1)
+#define MICROPY_PY_SYS                          (1)
+#define MICROPY_PY_SYS_PATH_DEFAULT             ".frozen"
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_UTIME                        (1)
