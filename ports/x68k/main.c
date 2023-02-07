@@ -408,8 +408,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-    extern char _start;
-    printf("base addr: %08x\n", (int)&_start);
     mp_stack_ctrl_init();
     return main_(argc, argv);
 }

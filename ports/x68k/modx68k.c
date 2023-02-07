@@ -42,6 +42,12 @@ STATIC void to_super(void)
     }
 }
 
+STATIC mp_obj_t x68k_mpyaddr(void) {
+    extern char _start;
+    return MP_OBJ_NEW_SMALL_INT((int)&_start);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_mpyaddr_obj, x68k_mpyaddr);
+
 STATIC mp_obj_t x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_d0, ARG_d1, ARG_d2, ARG_d3, ARG_d4, ARG_d5, 
            ARG_a1, ARG_a2, ARG_a1w, ARG_a2w, ARG_rd, ARG_ra };
@@ -164,6 +170,8 @@ extern const mp_obj_type_t x68k_i_obj_type;
 
 STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_x68k) },
+
+    { MP_ROM_QSTR(MP_QSTR_mpyaddr), MP_ROM_PTR(&x68k_mpyaddr_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_iocs), MP_ROM_PTR(&x68k_iocs_obj) },
     { MP_ROM_QSTR(MP_QSTR_i), MP_ROM_PTR(&x68k_i_obj_type) },
