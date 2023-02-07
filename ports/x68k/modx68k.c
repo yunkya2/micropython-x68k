@@ -42,7 +42,7 @@ STATIC void to_super(void)
     }
 }
 
-STATIC mp_obj_t mp_x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_d0, ARG_d1, ARG_d2, ARG_d3, ARG_d4, ARG_d5, 
            ARG_a1, ARG_a2, ARG_a1w, ARG_a2w, ARG_rd, ARG_ra };
     static const mp_arg_t allowed_args[] = {
@@ -122,9 +122,9 @@ STATIC mp_obj_t mp_x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mp_x68k_iocs_obj, 0, mp_x68k_iocs);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_iocs_obj, 0, x68k_iocs);
 
-STATIC mp_obj_t mp_x68k_crtmod(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t x68k_crtmod(size_t n_args, const mp_obj_t *args) {
     mp_int_t mode = mp_obj_get_int(args[0]);
     bool clron = false;
 
@@ -138,40 +138,40 @@ STATIC mp_obj_t mp_x68k_crtmod(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_x68k_crtmod_obj, 1, 2, mp_x68k_crtmod);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_crtmod_obj, 1, 2, x68k_crtmod);
 
-STATIC mp_obj_t mp_x68k_gvram(void) {
+STATIC mp_obj_t x68k_gvram(void) {
     to_super();
     return mp_obj_new_memoryview('B'|MP_OBJ_ARRAY_TYPECODE_FLAG_RW,
                                  0x200000, (void *)0xc00000);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_x68k_gvram_obj, mp_x68k_gvram);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_gvram_obj, x68k_gvram);
 
-STATIC mp_obj_t mp_x68k_tvram(void) {
+STATIC mp_obj_t x68k_tvram(void) {
     to_super();
     return mp_obj_new_memoryview('B'|MP_OBJ_ARRAY_TYPECODE_FLAG_RW,
                                  0x80000, (void *)0xe00000);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_x68k_tvram_obj, mp_x68k_tvram);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_tvram_obj, x68k_tvram);
 
-STATIC mp_obj_t mp_x68k_fontrom(void) {
+STATIC mp_obj_t x68k_fontrom(void) {
     to_super();
     return mp_obj_new_memoryview('B', 0xc0000, (void *)0xf00000);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_x68k_fontrom_obj, mp_x68k_fontrom);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_fontrom_obj, x68k_fontrom);
 
-extern const mp_obj_type_t mp_x68k_i_obj_type;
+extern const mp_obj_type_t x68k_i_obj_type;
 
 STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_x68k) },
 
-    { MP_ROM_QSTR(MP_QSTR_iocs), MP_ROM_PTR(&mp_x68k_iocs_obj) },
-    { MP_ROM_QSTR(MP_QSTR_i), MP_ROM_PTR(&mp_x68k_i_obj_type) },
+    { MP_ROM_QSTR(MP_QSTR_iocs), MP_ROM_PTR(&x68k_iocs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_i), MP_ROM_PTR(&x68k_i_obj_type) },
 
-    { MP_ROM_QSTR(MP_QSTR_crtmod), MP_ROM_PTR(&mp_x68k_crtmod_obj) },
-    { MP_ROM_QSTR(MP_QSTR_gvram), MP_ROM_PTR(&mp_x68k_gvram_obj) },
-    { MP_ROM_QSTR(MP_QSTR_tvram), MP_ROM_PTR(&mp_x68k_tvram_obj) },
-    { MP_ROM_QSTR(MP_QSTR_fontrom), MP_ROM_PTR(&mp_x68k_fontrom_obj) },
+    { MP_ROM_QSTR(MP_QSTR_crtmod), MP_ROM_PTR(&x68k_crtmod_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gvram), MP_ROM_PTR(&x68k_gvram_obj) },
+    { MP_ROM_QSTR(MP_QSTR_tvram), MP_ROM_PTR(&x68k_tvram_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fontrom), MP_ROM_PTR(&x68k_fontrom_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_x68k_globals, mp_module_x68k_globals_table);

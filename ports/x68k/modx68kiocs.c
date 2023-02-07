@@ -26,7 +26,7 @@
 
 #include "py/obj.h"
 
-STATIC const mp_rom_map_elem_t mp_x68k_i_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t x68k_i_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_B_KEYINP),    MP_ROM_INT(0x00) },
     { MP_ROM_QSTR(MP_QSTR_B_KEYSNS),    MP_ROM_INT(0x01) },
     { MP_ROM_QSTR(MP_QSTR_B_SFTSNS),    MP_ROM_INT(0x02) },
@@ -217,10 +217,10 @@ STATIC const mp_rom_map_elem_t mp_x68k_i_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ABORTJOB),    MP_ROM_INT(0xff) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_x68k_i_locals_dict, mp_x68k_i_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(x68k_i_locals_dict, x68k_i_locals_dict_table);
 
-const mp_obj_type_t mp_x68k_i_obj_type = {
+const mp_obj_type_t x68k_i_obj_type = {
     { &mp_type_type },
     .name = MP_QSTR_i,
-    .locals_dict = (mp_obj_dict_t *)&mp_x68k_i_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&x68k_i_locals_dict,
 };
