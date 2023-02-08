@@ -131,6 +131,13 @@ STATIC bool is_tail_of_identifier(mp_lexer_t *lex) {
     return is_head_of_identifier(lex) || is_digit(lex);
 }
 
+#define MP_LEXER_EOF_DOS    ((unichar)'\x1a')   // EOF char for DOS file
+
+STATIC unichar readbyte(mp_lexer_t *lex) {
+    unichar c = lex->reader.readbyte(lex->reader.data);
+    return (c == MP_LEXER_EOF_DOS) ? MP_LEXER_EOF : c;
+}
+
 STATIC void next_char(mp_lexer_t *lex) {
     if (lex->chr0 == '\n') {
         // a new line
@@ -171,7 +178,7 @@ STATIC void next_char(mp_lexer_t *lex) {
     } else
     #endif
     {
-        lex->chr2 = lex->reader.readbyte(lex->reader.data);
+        lex->chr2 = readbyte(lex);
     }
 
     if (lex->chr1 == '\r') {
@@ -179,7 +186,7 @@ STATIC void next_char(mp_lexer_t *lex) {
         lex->chr1 = '\n';
         if (lex->chr2 == '\n') {
             // CR LF is a single new line, throw out the extra LF
-            lex->chr2 = lex->reader.readbyte(lex->reader.data);
+            lex->chr2 = readbyte(lex);
         }
     }
 
