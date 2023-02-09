@@ -25,6 +25,7 @@
  */
 
 #include "py/obj.h"
+#include "modx68k.h"
 
 STATIC const mp_rom_map_elem_t x68k_i_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_B_KEYINP),    MP_ROM_INT(0x00) },

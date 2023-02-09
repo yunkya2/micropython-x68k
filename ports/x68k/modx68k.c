@@ -32,24 +32,27 @@
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/objarray.h"
+#include "modx68k.h"
 
-STATIC bool super_mode = false;
+/****************************************************************************/
+
+bool x68k_super_mode = false;
 STATIC int super_ssp;
 
 STATIC bool to_super(bool mode) {
-    if (mode && !super_mode) {
+    if (mode && !x68k_super_mode) {
         super_ssp = _iocs_b_super(0);
         if (super_ssp < 0) {
             super_ssp = 0;
         }
-    } else if (!mode && super_mode) {
+    } else if (!mode && x68k_super_mode) {
         if (super_ssp != 0) {
             _iocs_b_super(super_ssp);
             super_ssp = 0;
         }
     }
-    int res = super_mode;
-    super_mode = mode;
+    int res = x68k_super_mode;
+    x68k_super_mode = mode;
     return res;
 }
 
@@ -96,7 +99,7 @@ STATIC mp_obj_t x68k_super(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_super_obj, 0, 1, x68k_super);
 
 STATIC mp_obj_t x68k_issuper(void) {
-    return super_mode ? mp_const_true : mp_const_false;
+    return x68k_super_mode ? mp_const_true : mp_const_false;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_issuper_obj, x68k_issuper);
 
@@ -190,6 +193,8 @@ STATIC mp_obj_t x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_iocs_obj, 0, x68k_iocs);
 
+/****************************************************************************/
+
 STATIC mp_obj_t x68k_crtmod(size_t n_args, const mp_obj_t *args) {
     mp_int_t mode = mp_obj_get_int(args[0]);
     bool clron = false;
@@ -205,6 +210,8 @@ STATIC mp_obj_t x68k_crtmod(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_crtmod_obj, 1, 2, x68k_crtmod);
+
+/****************************************************************************/
 
 STATIC mp_obj_t x68k_gvram(void) {
     return mp_obj_new_memoryview('B'|MP_OBJ_ARRAY_TYPECODE_FLAG_RW,
@@ -223,7 +230,7 @@ STATIC mp_obj_t x68k_fontrom(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_fontrom_obj, x68k_fontrom);
 
-extern const mp_obj_type_t x68k_i_obj_type;
+/****************************************************************************/
 
 STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_x68k) },
@@ -241,6 +248,9 @@ STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gvram), MP_ROM_PTR(&x68k_gvram_obj) },
     { MP_ROM_QSTR(MP_QSTR_tvram), MP_ROM_PTR(&x68k_tvram_obj) },
     { MP_ROM_QSTR(MP_QSTR_fontrom), MP_ROM_PTR(&x68k_fontrom_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_vpage), MP_ROM_PTR(&x68k_vpage_obj) },
+    { MP_ROM_QSTR(MP_QSTR_GVRam), MP_ROM_PTR(&x68k_type_gvram) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_x68k_globals, mp_module_x68k_globals_table);
