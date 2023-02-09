@@ -63,3 +63,70 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 
 * `x68k.mpyaddr()`
   * MicroPython本体のメモリ上の開始アドレスを返します。デバッグ用です。
+
+#### クラス `Super` -- スーパーバイザモード制御
+
+* class `x68k.Super()`
+  * Super オブジェクトを構築します。以下のように `with` ステートメントで使用することで、ブロック内をスーパーバイザモードで実行します。
+  ```
+  # ここまではユーザーモード
+
+  with x68k.Super():
+    # ここからスーパーバイザモード
+    a = machine.mem32[0]    # スーパーバイザモードでアクセス
+
+  # ここからはユーザーモード
+  ```
+
+* `x68k.issuper()`
+  * スーパーバイザモードであれば `True` を、ユーザーモードであれば `False` を返します。
+* `x68k.super([mode])`
+  * スーパーバイザモードとユーザモードの間の切り替えを行います。
+  * mode を省略または `True` であればスーパーバイザモードに、`False` であればユーザーモードに切り替えます。
+  * 関数の戻り値として切り替え前のモードを返します。
+  ```
+  # ここまではユーザーモード
+
+  s = x68k.super()
+
+  # ここからスーパーバイザモード
+  a = machine.mem32[0]    # スーパーバイザモードでアクセス
+
+  x68k.super(s)
+
+  # ここからはユーザーモード
+  ```
+
+### クラス `GVRam` -- グラフィックス描画
+
+* class `x68k.GVRam([page])`
+  * GVRam オブジェクトを構築します。複数の描画ページを持つグラフィックスモードの場合は、pageに描画するページ番号を指定します。省略するとページ0を使用します。
+
+以下のメソッドによって描画を行います。
+
+* `GVRam.home(x, y [,all])` -- 表示位置指定
+* `GVRam.window(x0, y0, x1, y1)` -- 描画範囲設定
+* `GVRam.wipe()` -- 画面クリア
+* `GVRam.pset(x, y, c)` -- ポイント描画
+* `GVRam.point(x, y)` -- ポイントゲット
+* `GVRam.line(x0, y0, x1, y1, c [,style])` -- 直線描画
+* `GVRam.box(x0, y0, x1, y1, c [,style])` -- ボックス描画
+* `GVRam.fill(x0, y0, x1, y1, c)` -- 塗りつぶしボックス描画
+* `GVRam.circle(x, y, r, c [,start, end, ratio])` -- 円描画
+* `GVRam.paint(x, y, c [,buf])` -- シードフィル描画
+* `GVRam.symbol(x, y, str, xmag, ymag, c [,ftype, angle])` -- 文字列描画
+* `GVRam.get(x0, y0, x1, y1, buf)` -- 範囲内のデータ取得
+* `GVRam.put(x0, y0, x1, y1, buf)` -- 範囲内へデータ書き込み
+
+* `x68k.vpage(page)`
+  * グラフィック画面の表示ページを設定します。`page`のビット0～ビット3が各ページ番号に対応します。
+
+  ```
+  import x68k
+  x68k.crtmod(16,True)
+  x68k.vpage(1)   # ページ0のみ表示
+  g = x68k.GVRam(0)   # ページ0のオブジェクト構築
+  g.line(0, 0, 767, 511, 11)
+  g.fill(100, 100, 200, 200, 9)
+  g.symbol(10, 300, 'MicroPython!', 2, 2, 7)
+  ```
