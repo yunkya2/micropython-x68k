@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <x68k/dos.h>
 
 #include "py/builtin.h"
 #include "py/compile.h"
@@ -57,6 +58,14 @@ STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 // Heap size of GC heap (if enabled)
 long heap_size = 1024 * 1024;
 #endif
+
+STATIC void kbd_intr(void) {
+    mp_raise_type(&mp_type_KeyboardInterrupt);
+}
+
+STATIC void os_error(void) {
+    mp_raise_type(&mp_type_OSError);
+}
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
@@ -283,6 +292,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
 
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
+
+    _dos_intvcs(0xfff1, kbd_intr);
+    _dos_intvcs(0xfff2, os_error);
 
     const int NOTHING_EXECUTED = -2;
     int ret = NOTHING_EXECUTED;

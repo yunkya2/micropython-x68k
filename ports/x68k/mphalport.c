@@ -86,6 +86,14 @@ void mp_hal_delay_us(mp_uint_t us) {
     mp_hal_delay_ms(us / 1000);
 }
 
+void mp_hal_set_interrupt_char(char c) {
+    if (c == 3) {
+        _dos_breakck(1);
+    } else {
+        _dos_breakck(2);
+    }
+}
+
 STATIC struct {
     int fno;
     const char *keydef;

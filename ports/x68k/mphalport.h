@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-static inline void mp_hal_set_interrupt_char(char c) {
-}
+void mp_hal_set_interrupt_char(char c);
 
 void mp_hal_setfnckey(void);
 void mp_hal_restorefnckey(void);
