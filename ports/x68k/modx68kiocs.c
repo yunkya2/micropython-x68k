@@ -24,8 +24,93 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "py/obj.h"
 #include "modx68k.h"
+
+STATIC mp_obj_t x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_d0, ARG_d1, ARG_d2, ARG_d3, ARG_d4, ARG_d5,
+           ARG_a1, ARG_a2, ARG_a1w, ARG_a2w, ARG_rd, ARG_ra };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_d0,   MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_d1,   MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_d2,   MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_d3,   MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_d4,   MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_d5,   MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_a1,   MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_a2,   MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_a1w,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_a2w,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rd,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_ra,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args,
+                    MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_int_t regs[8] = {0};
+    mp_int_t rd = 0, ra = 0;
+    int i;
+
+    for (i = 0; i <= ARG_ra; i++) {
+        if (i <= ARG_d5) {
+            regs[i - ARG_d0] = args[i].u_int;
+        } else if (i <= ARG_a2w) {
+            if (args[i].u_obj != MP_OBJ_NULL) {
+                if (mp_obj_is_int(args[i].u_obj)) {
+                    regs[6 + (i - ARG_a1) % 2] = mp_obj_get_int(args[i].u_obj);
+                } else {
+                    mp_buffer_info_t bufinfo;
+                    int flags;
+                    if (i <= ARG_a2) {
+                        flags = MP_BUFFER_READ;
+                    } else {
+                        flags = MP_BUFFER_RW;
+                    }
+                    mp_get_buffer_raise(args[i].u_obj, &bufinfo, flags);
+                    regs[6 + (i - ARG_a1) % 2] = (mp_int_t)bufinfo.buf;
+                }
+            }
+        } else if (i == ARG_rd) {
+            rd = args[i].u_int;
+            if (rd < 0 || rd > 5) {
+                mp_raise_ValueError(MP_ERROR_TEXT("rd out of range"));
+            }
+        } else if (i == ARG_ra) {
+            ra = args[i].u_int;
+            if (ra < 0 || ra > 2) {
+                mp_raise_ValueError(MP_ERROR_TEXT("ra out of range"));
+            }
+        }
+    }
+
+    __asm volatile (
+        "moveml %0@, %%d0-%%d5/%%a1-%%a2\n"
+        "trap #15\n"
+        "moveml %%d0-%%d5/%%a1-%%a2,%0@\n"
+        : : "a"(regs)
+        : "%%d0","%%d1","%%d2","%%d3","%%d4","%%d5","%%a1","%%a2", "memory"
+    );
+
+    if (rd + ra == 0) {
+        return mp_obj_new_int(regs[0]);
+    } else {
+        mp_obj_t tuple[8];
+        int t = 1;
+        tuple[0] = mp_obj_new_int(regs[0]);
+        for (i = 0; i < rd; i++) {
+            tuple[t++] = mp_obj_new_int(regs[1 + i]);
+        }
+        for (i = 0; i < ra; i++) {
+            tuple[t++] = mp_obj_new_int(regs[6 + i]);
+        }
+        return mp_obj_new_tuple(t, tuple);
+    }
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(x68k_iocs_obj, 0, x68k_iocs);
+
+/****************************************************************************/
 
 STATIC const mp_rom_map_elem_t x68k_i_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_B_KEYINP),    MP_ROM_INT(0x00) },
