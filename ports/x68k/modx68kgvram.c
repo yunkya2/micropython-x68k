@@ -51,12 +51,12 @@ typedef struct _mp_obj_x68k_gvram_t {
     int page;
 } mp_obj_x68k_gvram_t;
 
-STATIC int page = 0;
+STATIC int current_page = -1;
 
 STATIC void apage(mp_obj_x68k_gvram_t *self) {
-    if (self->page != page) {
+    if (self->page != current_page) {
         _iocs_apage(self->page);
-        page = self->page;
+        current_page = self->page;
     }
 }
 
@@ -424,6 +424,7 @@ STATIC mp_obj_t x68k_gvram_make_new(const mp_obj_type_t *type, size_t n_args, si
     if (n_args > 0) {
         o->page = mp_obj_get_int(args[0]);
     }
+    current_page = -1;
     return MP_OBJ_FROM_PTR(o);
 }
 
