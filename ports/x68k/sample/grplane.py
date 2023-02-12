@@ -1,8 +1,5 @@
 import x68k
 import random
-import machine
-
-REG_GPIP = const(0xE88001)
 
 x68k.crtmod(4, True)
 
@@ -45,11 +42,7 @@ while True:
         break
 
     # wait vblank
-    with x68k.Super():
-        while (machine.mem8[ REG_GPIP ] & 0x10) == 0:
-            pass
-        while (machine.mem8[ REG_GPIP ] & 0x10) != 0:
-            pass
+    x68k.vsync()
 
     g0.home(g0x, 0)
     g0x = (g0x + 2) % 512
