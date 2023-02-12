@@ -129,6 +129,32 @@ STATIC mp_obj_t x68k_crtmod(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_crtmod_obj, 1, 2, x68k_crtmod);
 
+STATIC mp_obj_t x68k_curon(void) {
+    _iocs_os_curon();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_curon_obj, x68k_curon);
+
+STATIC mp_obj_t x68k_curoff(void) {
+    _iocs_os_curof();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_curoff_obj, x68k_curoff);
+
+#define REG_GPIP        (0xE88001)
+
+STATIC mp_obj_t x68k_vsync(void) {
+    int oldstat = to_super(true);
+    while ((*(volatile uint8_t *)REG_GPIP & 0x10) == 0)
+        ;
+    while ((*(volatile uint8_t *)REG_GPIP & 0x10) != 0)
+        ;
+    to_super(oldstat);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_vsync_obj, x68k_vsync);
+
 /****************************************************************************/
 
 STATIC mp_obj_t x68k_gvram(void) {
@@ -163,6 +189,9 @@ STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_i), MP_ROM_PTR(&x68k_i_obj_type) },
 
     { MP_ROM_QSTR(MP_QSTR_crtmod), MP_ROM_PTR(&x68k_crtmod_obj) },
+    { MP_ROM_QSTR(MP_QSTR_vsync), MP_ROM_PTR(&x68k_vsync_obj) },
+    { MP_ROM_QSTR(MP_QSTR_curon), MP_ROM_PTR(&x68k_curon_obj) },
+    { MP_ROM_QSTR(MP_QSTR_curoff), MP_ROM_PTR(&x68k_curoff_obj) },
     { MP_ROM_QSTR(MP_QSTR_gvram), MP_ROM_PTR(&x68k_gvram_obj) },
     { MP_ROM_QSTR(MP_QSTR_tvram), MP_ROM_PTR(&x68k_tvram_obj) },
     { MP_ROM_QSTR(MP_QSTR_fontrom), MP_ROM_PTR(&x68k_fontrom_obj) },

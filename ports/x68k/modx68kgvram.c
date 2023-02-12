@@ -418,11 +418,16 @@ STATIC mp_obj_t x68k_gvram_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     mp_obj_x68k_gvram_t *o = mp_obj_malloc(mp_obj_x68k_gvram_t, type);
-    o->buf = (void *)0xc00000;
-    o->len = 0x200000;
     o->page = 0;
     if (n_args > 0) {
         o->page = mp_obj_get_int(args[0]);
+    }
+    if (o->page == 0) {
+        o->buf = (void *)0xc00000;
+        o->len = 0x200000;
+    } else {
+        o->buf = (void *)(0xc00000 + 0x80000 * o->page);
+        o->len = 0x80000;
     }
     current_page = -1;
     return MP_OBJ_FROM_PTR(o);
