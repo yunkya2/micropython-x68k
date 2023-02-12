@@ -33,11 +33,11 @@ STATIC mp_obj_t x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
            ARG_a1, ARG_a2, ARG_a1w, ARG_a2w, ARG_rd, ARG_ra };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_d0,   MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_d1,   MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_d2,   MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_d3,   MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_d4,   MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_d5,   MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_d1,   MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_d2,   MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_d3,   MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_d4,   MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_d5,   MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_a1,   MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_a2,   MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_a1w,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -53,12 +53,13 @@ STATIC mp_obj_t x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     int i;
 
     for (i = 0; i <= ARG_ra; i++) {
-        if (i <= ARG_d5) {
-            regs[i - ARG_d0] = args[i].u_int;
+        if (i == ARG_d0) {
+            regs[0] = args[i].u_int;
         } else if (i <= ARG_a2w) {
+            int r = (i < ARG_a1w) ? i : i - (ARG_a1w - ARG_a1);
             if (args[i].u_obj != MP_OBJ_NULL) {
                 if (mp_obj_is_int(args[i].u_obj)) {
-                    regs[6 + (i - ARG_a1) % 2] = mp_obj_get_int(args[i].u_obj);
+                    regs[r] = mp_obj_get_int(args[i].u_obj);
                 } else {
                     mp_buffer_info_t bufinfo;
                     int flags;
@@ -68,7 +69,11 @@ STATIC mp_obj_t x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
                         flags = MP_BUFFER_RW;
                     }
                     mp_get_buffer_raise(args[i].u_obj, &bufinfo, flags);
-                    regs[6 + (i - ARG_a1) % 2] = (mp_int_t)bufinfo.buf;
+                    if (i <= ARG_d5) {
+                        regs[r] = *(mp_int_t *)bufinfo.buf;
+                    } else {
+                        regs[r] = (mp_int_t)bufinfo.buf;
+                    }
                 }
             }
         } else if (i == ARG_rd) {
