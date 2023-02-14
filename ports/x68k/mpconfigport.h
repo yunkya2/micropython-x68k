@@ -74,7 +74,7 @@
 #define MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV   (1)
 #define MICROPY_PY_UOS_SEP                      (1)
 #define MICROPY_PY_UOS_SYNC                     (0)
-#define MICROPY_PY_UOS_SYSTEM                   (0)
+#define MICROPY_PY_UOS_SYSTEM                   (1)
 #define MICROPY_PY_UOS_UNAME                    (1)
 #define MICROPY_PY_UOS_URANDOM                  (0)
 #define MICROPY_PY_UOS_ERRNO                    (1)
