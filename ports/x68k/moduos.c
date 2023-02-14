@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <x68k/dos.h>
 
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -68,20 +69,31 @@ STATIC mp_obj_t mp_uos_unsetenv(mp_obj_t key_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_unsetenv_obj, mp_uos_unsetenv);
 
-#if 0
 STATIC mp_obj_t mp_uos_system(mp_obj_t cmd_in) {
     const char *cmd = mp_obj_str_get_str(cmd_in);
 
-    MP_THREAD_GIL_EXIT();
-    int r = system(cmd);
-    MP_THREAD_GIL_ENTER();
+    int len = strlen(cmd);
+    char *cmdname = malloc(len + 256);
+    char *cmdarg = malloc(len);
+    strcpy(cmdname, cmd);
 
-    RAISE_ERRNO(r, errno);
+    int ret = _dos_exec2(2, cmdname, cmdarg, 0);
+    if (ret >= 0) {
+        ret = _dos_exec2(0, cmdname, cmdarg, 0);
+    }
 
-    return MP_OBJ_NEW_SMALL_INT(r);
+    free(cmdname);
+    free(cmdarg);
+
+    if (ret == -1) {
+        mp_raise_OSError(errno);
+    }
+    return MP_OBJ_NEW_SMALL_INT(ret);
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_system_obj, mp_uos_system);
 
+#if 0
 STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
     vstr_t vstr;
