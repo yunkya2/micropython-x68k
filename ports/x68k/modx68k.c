@@ -187,6 +187,8 @@ STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_iocs), MP_ROM_PTR(&x68k_iocs_obj) },
     { MP_ROM_QSTR(MP_QSTR_i), MP_ROM_PTR(&x68k_i_obj_type) },
+    { MP_ROM_QSTR(MP_QSTR_dos), MP_ROM_PTR(&x68k_dos_obj) },
+    { MP_ROM_QSTR(MP_QSTR_d), MP_ROM_PTR(&x68k_d_obj_type) },
 
     { MP_ROM_QSTR(MP_QSTR_crtmod), MP_ROM_PTR(&x68k_crtmod_obj) },
     { MP_ROM_QSTR(MP_QSTR_vsync), MP_ROM_PTR(&x68k_vsync_obj) },

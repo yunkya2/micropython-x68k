@@ -36,4 +36,7 @@ extern const mp_obj_type_t x68k_type_gvram;
 MP_DECLARE_CONST_FUN_OBJ_KW(x68k_iocs_obj);
 extern const mp_obj_type_t x68k_i_obj_type;
 
+MP_DECLARE_CONST_FUN_OBJ_KW(x68k_dos_obj);
+extern const mp_obj_type_t x68k_d_obj_type;
+
 #endif // MICROPY_INCLUDED_MODX68K_H
