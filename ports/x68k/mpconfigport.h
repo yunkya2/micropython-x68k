@@ -38,6 +38,7 @@
 #define MICROPY_OBJ_BASE_ALIGNMENT  __attribute__((aligned(4)))
 
 // Python internal features.
+#define MICROPY_EMIT_INLINE_M68K                (1)
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_GCREGS_SETJMP                   (1)
 #define MICROPY_HELPER_REPL                     (1)
