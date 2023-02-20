@@ -69,6 +69,6 @@ $(TARGET): $(OBJ)
 include $(TOP)/py/mkrules.mk
 
 release: all
-	cp README.md build
+	cp README*.md build
 	cp -pr sample build
-	(cd build; zip -r micropython-$(shell git describe).zip micropython.x README.md sample)
+	(cd build; zip -r micropython-$(shell git describe).zip micropython.x *.md sample)
