@@ -74,6 +74,7 @@ STATIC void emit_inline_m68k_error_exc(emit_inline_asm_t *emit, mp_obj_t exc) {
 emit_inline_asm_t *emit_inline_m68k_new(mp_uint_t max_num_labels) {
     emit_inline_asm_t *emit = m_new_obj(emit_inline_asm_t);
     memset(&emit->as, 0, sizeof(emit->as));
+    emit->as.base.endian = true;            /* big endian */
     mp_asm_base_init(&emit->as.base, max_num_labels);
     emit->max_num_labels = max_num_labels;
     emit->label_lookup = m_new(qstr, max_num_labels);

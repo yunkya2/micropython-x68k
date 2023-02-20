@@ -34,6 +34,7 @@
 
 typedef struct _mp_asm_base_t {
     int pass;
+    bool endian;
     size_t code_offset;
     size_t code_size;
     uint8_t *code_base;

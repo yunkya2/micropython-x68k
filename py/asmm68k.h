@@ -33,8 +33,6 @@
 
 typedef struct _asm_m68k_t {
     mp_asm_base_t base;
-    uint32_t push_reglist;
-    uint32_t stack_adjust;
 } asm_m68k_t;
 
 static inline void asm_m68k_end_pass(asm_m68k_t *as) {
