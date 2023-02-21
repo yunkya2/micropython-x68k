@@ -70,5 +70,9 @@ include $(TOP)/py/mkrules.mk
 
 release: all
 	cp README*.md build
-	cp -pr sample build
+	rm -rf build/sample
+	mkdir build/sample
+	for f in sample/*.py; do \
+		sed 's/$$/\r/' $$f > build/$$f; \
+	done
 	(cd build; zip -r micropython-$(shell git describe).zip micropython.x *.md sample)
