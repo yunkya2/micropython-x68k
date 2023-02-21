@@ -4,7 +4,7 @@ import random
 
 x68k.crtmod(14, True)
 with x68k.Super():
-    fb = framebuf.FrameBuffer(x68k.gvram(), 256, 256, framebuf.RGB565, 512)
+    fb = framebuf.FrameBuffer(x68k.GVRam(), 256, 256, framebuf.RGB565, 512)
 
     for a in range(100):
         x0 = random.randint(0,255)

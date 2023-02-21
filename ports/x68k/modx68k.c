@@ -157,18 +157,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_vsync_obj, x68k_vsync);
 
 /****************************************************************************/
 
-STATIC mp_obj_t x68k_gvram(void) {
-    return mp_obj_new_memoryview('B'|MP_OBJ_ARRAY_TYPECODE_FLAG_RW,
-                                 0x200000, (void *)0xc00000);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_gvram_obj, x68k_gvram);
-
-STATIC mp_obj_t x68k_tvram(void) {
-    return mp_obj_new_memoryview('B'|MP_OBJ_ARRAY_TYPECODE_FLAG_RW,
-                                 0x80000, (void *)0xe00000);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_tvram_obj, x68k_tvram);
-
 STATIC mp_obj_t x68k_fontrom(void) {
     return mp_obj_new_memoryview('B', 0xc0000, (void *)0xf00000);
 }
@@ -194,8 +182,6 @@ STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_vsync), MP_ROM_PTR(&x68k_vsync_obj) },
     { MP_ROM_QSTR(MP_QSTR_curon), MP_ROM_PTR(&x68k_curon_obj) },
     { MP_ROM_QSTR(MP_QSTR_curoff), MP_ROM_PTR(&x68k_curoff_obj) },
-    { MP_ROM_QSTR(MP_QSTR_gvram), MP_ROM_PTR(&x68k_gvram_obj) },
-    { MP_ROM_QSTR(MP_QSTR_tvram), MP_ROM_PTR(&x68k_tvram_obj) },
     { MP_ROM_QSTR(MP_QSTR_fontrom), MP_ROM_PTR(&x68k_fontrom_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_vpage), MP_ROM_PTR(&x68k_vpage_obj) },
