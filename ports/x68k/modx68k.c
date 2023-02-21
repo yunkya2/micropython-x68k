@@ -200,6 +200,7 @@ STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_vpage), MP_ROM_PTR(&x68k_vpage_obj) },
     { MP_ROM_QSTR(MP_QSTR_GVRam), MP_ROM_PTR(&x68k_type_gvram) },
+    { MP_ROM_QSTR(MP_QSTR_TVRam), MP_ROM_PTR(&x68k_type_tvram) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_x68k_globals, mp_module_x68k_globals_table);
