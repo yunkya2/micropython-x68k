@@ -125,13 +125,14 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
   # ここからはユーザーモード
   ```
 
-#### クラス `GVRam` -- グラフィックス描画
+#### クラス `GVRam` -- グラフィックスVRAM描画
 
 * class `x68k.GVRam([page])`
   * GVRam オブジェクトを構築します。複数の描画ページを持つグラフィックスモードの場合は、pageに描画するページ番号を指定します。省略するとページ0を使用します。
 
 以下のメソッドによって描画を行います。
 
+* `GVRam.palet(pal, col)` -- パレット設定
 * `GVRam.home(x, y [,all])` -- 表示位置指定
 * `GVRam.window(x0, y0, x1, y1)` -- 描画範囲設定
 * `GVRam.wipe()` -- 画面クリア
@@ -158,6 +159,26 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
   g.fill(100, 100, 200, 200, 9)
   g.symbol(10, 300, 'MicroPython!', 2, 2, 7)
   ```
+#### クラス `TVRam` -- テキストVRAM描画
+
+* class `x68k.TVRam()`
+  * TVRam オブジェクトを構築します。
+
+以下のメソッドによって描画を行います。
+
+* `TVRam.palet(pal, col)` -- パレット設定
+* `TVRam.palet2(pal, col)` -- パレット設定 (マウスプレーンを考慮しない)
+* `TVRam.xline(plane, x, y, len [,style])` -- 横直線描画
+* `TVRam.yline(plane, x, y, len [,style])` -- 縦直線描画
+* `TVRam.line(plane, x, y, w, h [,style])` -- 直線描画
+* `TVRam.box(plane, x, y, w, h [,style])` -- ボックス描画
+* `TVRam.fill(plane, x, y, w, h [,style])` -- 塗りつぶしボックス描画
+* `TVRam.rev(plane, x, y, w, h)` -- 矩形領域反転
+* `TVRam.rascpy(src, dst, n, dir, plane)` -- ラスターコピー
+* `TVRam.color(plane)` -- 描画対象プレーン設定
+* `TVRam.get(x, y, buf)` -- 範囲内のデータ取得
+* `TVRam.put(x, y, buf)` -- 範囲内へデータ書き込み
+* `TVRam.clipput(x, y, buf, (x0, y0, x1, y1))` -- 範囲内へデータ書き込み(クリッピングあり)
 
 ## インラインアセンブラ
 
