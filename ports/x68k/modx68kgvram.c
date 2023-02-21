@@ -60,6 +60,14 @@ STATIC void apage(mp_obj_x68k_gvram_t *self) {
     }
 }
 
+STATIC mp_obj_t x68k_gvram_palet(mp_obj_t self_in, mp_obj_t arg1, mp_obj_t arg2) {
+    mp_int_t pal = mp_obj_get_int(arg1);
+    mp_int_t col = mp_obj_get_int(arg2);
+    mp_int_t res = _iocs_gpalet(pal, col);
+    return MP_OBJ_NEW_SMALL_INT(res);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(x68k_gvram_palet_obj, x68k_gvram_palet);
+
 STATIC mp_obj_t x68k_gvram_home(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y, ARG_all };
     static const mp_arg_t allowed_args[] = {
@@ -479,6 +487,7 @@ STATIC mp_int_t x68k_gvram_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinf
 }
 
 STATIC const mp_rom_map_elem_t x68k_gvram_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_palet),  MP_ROM_PTR(&x68k_gvram_palet_obj) },
     { MP_ROM_QSTR(MP_QSTR_home),   MP_ROM_PTR(&x68k_gvram_home_obj) },
     { MP_ROM_QSTR(MP_QSTR_window), MP_ROM_PTR(&x68k_gvram_window_obj) },
     { MP_ROM_QSTR(MP_QSTR_wipe),   MP_ROM_PTR(&x68k_gvram_wipe_obj) },
