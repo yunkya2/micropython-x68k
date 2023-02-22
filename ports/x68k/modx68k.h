@@ -35,6 +35,8 @@ extern const mp_obj_type_t x68k_type_gvram;
 
 extern const mp_obj_type_t x68k_type_tvram;
 
+extern const mp_obj_type_t x68k_type_sprite;
+
 MP_DECLARE_CONST_FUN_OBJ_KW(x68k_iocs_obj);
 extern const mp_obj_type_t x68k_i_obj_type;
 

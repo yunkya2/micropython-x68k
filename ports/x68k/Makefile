@@ -28,6 +28,7 @@ SRC_C = \
 	modx68k.c \
 	modx68kgvram.c \
 	modx68ktvram.c \
+	modx68kspr.c \
 	modx68kiocs.c \
 	modx68kdos.c \
 	shared/readline/readline.c \
