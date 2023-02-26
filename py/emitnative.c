@@ -2345,6 +2345,17 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             return;
         }
 
+#if MICROPY_SMALL_INT_MUL_HELPER
+        // m68k doesn't have 32bit multiply
+        if (op == MP_BINARY_OP_MULTIPLY) {
+            emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_2, &vtype_lhs, REG_ARG_1);
+            need_reg_all(emit);
+            ASM_CALL_IND_N(emit->as, MP_F_SMALL_INT_MULTIPLY, 2);
+            emit_post_push_reg(emit, VTYPE_INT, REG_RET);
+            return;
+        }
+#endif
+
         int reg_rhs = REG_ARG_3;
         emit_pre_pop_reg_flexible(emit, &vtype_rhs, &reg_rhs, REG_RET, REG_ARG_2);
         emit_pre_pop_reg(emit, &vtype_lhs, REG_ARG_2);
@@ -2380,9 +2391,11 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         } else if (op == MP_BINARY_OP_SUBTRACT) {
             ASM_SUB_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
+#if !MICROPY_SMALL_INT_MUL_HELPER
         } else if (op == MP_BINARY_OP_MULTIPLY) {
             ASM_MUL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
+#endif
         } else if (MP_BINARY_OP_LESS <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
             // comparison ops are (in enum order):
             //  MP_BINARY_OP_LESS

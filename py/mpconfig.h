@@ -396,6 +396,11 @@
 #define MICROPY_EMIT_INLINE_M68K (0)
 #endif
 
+// Add a multiply helper function for CPUs that don't have 32-bit multply
+#ifndef MICROPY_SMALL_INT_MUL_HELPER
+#define MICROPY_SMALL_INT_MUL_HELPER (0)
+#endif
+
 // Convenience definition for whether any native emitter is enabled
 #define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN || MICROPY_EMIT_M68K)
 
