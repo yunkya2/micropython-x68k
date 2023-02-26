@@ -219,4 +219,14 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 ## インラインアセンブラ
 
 MicroPythonのインラインアセンブラ機能をサポートしています。
+`@micropython.asm_m68k` デコレータを付けた関数はインラインアセンブラ関数となります。
+
 詳細は[こちらのドキュメント](README-inlineasm.md)を参照してください。
+
+## ネイティブ/バイパーコードエミッター
+
+MicroPythonのネイティブ/バイパーコードエミッター機能をサポートしています。
+
+`@micropython.native` または `@micropython.viper` デコレータを付けた関数では通常のバイトコードの代わりにCPUの機械語コードが出力され、それをCPUが直接実行することで実行速度を高速化します。
+
+詳細は公式ドキュメントの [ネイティブコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.19.1ja/reference/speed_python.html#the-native-code-emitter) および [バイパーコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.19.1ja/reference/speed_python.html#the-viper-code-emitter) を参照してください。
