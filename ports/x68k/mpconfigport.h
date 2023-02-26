@@ -39,6 +39,8 @@
 
 // Python internal features.
 #define MICROPY_EMIT_INLINE_M68K                (1)
+#define MICROPY_EMIT_M68K                       (1)
+#define MICROPY_SMALL_INT_MUL_HELPER            (1)
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_GCREGS_SETJMP                   (1)
 #define MICROPY_HELPER_REPL                     (1)
