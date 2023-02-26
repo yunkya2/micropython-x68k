@@ -54,7 +54,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 mp_uint_t mp_hal_ticks_ms(void) {
     struct iocs_time t;
     t = _iocs_ontime();
-    return t.sec;
+    return t.sec * 10;
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
