@@ -2345,7 +2345,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             return;
         }
 
-#if MICROPY_SMALL_INT_MUL_HELPER
+#if MICROPY_SMALL_INT_MUL_HELPER && defined (ASM_CALL_IND_N)
         // m68k doesn't have 32bit multiply
         if (op == MP_BINARY_OP_MULTIPLY) {
             emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_2, &vtype_lhs, REG_ARG_1);
@@ -2391,7 +2391,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         } else if (op == MP_BINARY_OP_SUBTRACT) {
             ASM_SUB_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
-#if !MICROPY_SMALL_INT_MUL_HELPER
+#if !(MICROPY_SMALL_INT_MUL_HELPER && defined (ASM_CALL_IND_N))
         } else if (op == MP_BINARY_OP_MULTIPLY) {
             ASM_MUL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
