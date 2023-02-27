@@ -38,6 +38,7 @@
 #define MICROPY_OBJ_BASE_ALIGNMENT  __attribute__((aligned(4)))
 
 // Python internal features.
+#define MICROPY_PERSISTENT_CODE_LOAD            (1)
 #define MICROPY_EMIT_INLINE_M68K                (1)
 #define MICROPY_EMIT_M68K                       (1)
 #define MICROPY_SMALL_INT_MUL_HELPER            (1)
@@ -116,3 +117,14 @@ typedef long mp_off_t;
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
+
+// Additional definitions for x68k
+#ifndef PATH_MAX
+#define PATH_MAX        4096
+#endif
+#ifndef O_BINARY
+#define O_BINARY        0x10000
+#endif
+#ifndef O_TEXT
+#define O_TEXT          0x20000
+#endif

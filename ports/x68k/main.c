@@ -47,10 +47,6 @@
 #include "vfs_human.h"
 #include "mphalport.h"
 
-#ifndef PATH_MAX
-#define PATH_MAX        4096
-#endif
-
 // Command line options, with their defaults
 STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 

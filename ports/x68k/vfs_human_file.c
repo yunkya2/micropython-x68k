@@ -81,11 +81,11 @@ mp_obj_t mp_vfs_human_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
             // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_vfs_human_fileio;
-                mode_bt = 0x10000;      /* O_BINARY */
+                mode_bt = O_BINARY;
                 break;
             case 't':
                 type = &mp_type_vfs_human_textio;
-                mode_bt = 0x20000;      /* O_TEXT */
+                mode_bt = O_TEXT;
                 break;
                 #endif
         }
