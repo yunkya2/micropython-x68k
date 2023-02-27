@@ -109,7 +109,7 @@ STATIC int usage(char **argv) {
         "\n"
         "Target specific options:\n"
         "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
-        "-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin\n"
+        "-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin, m68k\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -212,6 +212,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #elif defined(__arm__) && !defined(__thumb2__)
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+    #elif defined(__m68k__)
+    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_M68K;
     #else
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
@@ -292,6 +294,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "xtensawin") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
+                } else if (strcmp(arch, "m68k") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_M68K;
                 } else {
                     return usage(argv);
                 }

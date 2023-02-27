@@ -869,6 +869,8 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, size_t name_len, mp_par
         *emit_options = MP_EMIT_OPT_ASM;
     } else if (attr == MP_QSTR_asm_xtensa) {
         *emit_options = MP_EMIT_OPT_ASM;
+    } else if (attr == MP_QSTR_asm_m68k) {
+        *emit_options = MP_EMIT_OPT_ASM;
     #else
     } else if (attr == ASM_DECORATOR_QSTR) {
         *emit_options = MP_EMIT_OPT_ASM;

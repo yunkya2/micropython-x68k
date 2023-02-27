@@ -632,7 +632,11 @@ STATIC void fd_print_strn(void *env, const char *str, size_t len) {
 
 void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename) {
     MP_THREAD_GIL_EXIT();
+#ifdef O_BINARY
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
+#else
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+#endif
     MP_THREAD_GIL_ENTER();
     mp_print_t fd_print = {(void *)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(cm, &fd_print);
