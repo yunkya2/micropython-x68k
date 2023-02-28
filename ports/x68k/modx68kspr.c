@@ -221,7 +221,7 @@ STATIC mp_obj_t x68k_spr_bgscroll(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgscroll_obj, 4, 5, x68k_spr_bgscroll);
 
 STATIC mp_obj_t x68k_sprite_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     mp_obj_x68k_sprite_t *o = mp_obj_malloc(mp_obj_x68k_sprite_t, type);
     o->buf = (void *)0xeb8000;

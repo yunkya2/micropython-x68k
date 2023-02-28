@@ -310,7 +310,7 @@ STATIC mp_obj_t x68k_tvram_clipput(size_t n_args, const mp_obj_t *pos_args, mp_m
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_clipput_obj, 1, x68k_tvram_clipput);
 
 STATIC mp_obj_t x68k_tvram_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     mp_obj_x68k_tvram_t *o = mp_obj_malloc(mp_obj_x68k_tvram_t, type);
     o->buf = (void *)0xe00000;
