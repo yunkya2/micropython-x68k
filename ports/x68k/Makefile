@@ -31,6 +31,7 @@ SRC_C = \
 	modx68kspr.c \
 	modx68kiocs.c \
 	modx68kdos.c \
+	modx68kint.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_generic.c \
 	shared/runtime/pyexec.c \
