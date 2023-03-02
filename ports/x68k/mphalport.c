@@ -79,6 +79,7 @@ void mp_hal_delay_ms(mp_uint_t ms) {
         t2 = _iocs_ontime();
         if (t2.sec - t1.sec >= ms / 10)
             break;
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 

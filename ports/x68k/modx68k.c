@@ -145,10 +145,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_curoff_obj, x68k_curoff);
 
 STATIC mp_obj_t x68k_vsync(void) {
     int oldstat = to_super(true);
-    while ((*(volatile uint8_t *)REG_GPIP & 0x10) == 0)
-        ;
-    while ((*(volatile uint8_t *)REG_GPIP & 0x10) != 0)
-        ;
+    while ((*(volatile uint8_t *)REG_GPIP & 0x10) == 0) {
+        MICROPY_EVENT_POLL_HOOK
+    }
+    while ((*(volatile uint8_t *)REG_GPIP & 0x10) != 0) {
+        MICROPY_EVENT_POLL_HOOK
+    }
     to_super(oldstat);
 
     return mp_const_none;

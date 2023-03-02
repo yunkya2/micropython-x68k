@@ -91,7 +91,6 @@
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
-        /* mp_hal_delay_us(500); */ \
     } while (0);
 
 #define MICROPY_REPL_EMACS_KEYS                 (1)
