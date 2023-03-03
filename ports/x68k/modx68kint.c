@@ -287,3 +287,65 @@ const mp_obj_type_t x68k_type_intraster = {
     .make_new = x68k_intraster_make_new,
     .locals_dict = (mp_obj_dict_t *)&x68k_intraster_locals_dict,
 };
+
+/****************************************************************************/
+
+typedef struct _x68k_intdisable_t {
+    mp_obj_base_t base;
+    uint16_t oldsr;
+} x68k_intdisable_t;
+
+STATIC mp_obj_t x68k_intdisable_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    x68k_intdisable_t *self = mp_obj_malloc(x68k_intdisable_t, type);
+    __asm__ volatile ("movew %%sr,%0" : "=d"(self->oldsr));
+    if (self->oldsr & 0x2000) {
+        /* disable interrupt only when in supervisor mode */
+        __asm__ volatile ("movew %0,%%sr" : : "d"(self->oldsr | 0x0700));
+    }
+    return MP_OBJ_FROM_PTR(self);
+}
+
+STATIC mp_obj_t x68k_intdisable___exit__(size_t n_args, const mp_obj_t *args) {
+    x68k_intdisable_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (self->oldsr & 0x2000) {
+        /* restore interrupt mask only when in supervisor mode */
+        __asm__ volatile ("movew %0,%%sr" : : "d"(self->oldsr));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_intdisable___exit___obj, 4, 4, x68k_intdisable___exit__);
+
+STATIC const mp_rom_map_elem_t x68k_intdisable_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&x68k_intdisable___exit___obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(x68k_intdisable_locals_dict, x68k_intdisable_locals_dict_table);
+
+const mp_obj_type_t x68k_type_intdisable = {
+    { &mp_type_type },
+    .name = MP_QSTR_IntDisable,
+    .make_new = x68k_intdisable_make_new,
+    .locals_dict = (mp_obj_dict_t *)&x68k_intdisable_locals_dict,
+};
+
+STATIC mp_obj_t x68k_intdisable(void) {
+    uint16_t oldsr;
+    __asm__ volatile ("movew %%sr,%0" : "=d"(oldsr));
+    if (oldsr & 0x2000) {
+        /* disable interrupt only when in supervisor mode */
+        __asm__ volatile ("movew %0,%%sr" : : "d"(oldsr | 0x0700));
+    }
+    return MP_OBJ_NEW_SMALL_INT(oldsr);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(x68k_intdisable_obj, x68k_intdisable);
+
+STATIC mp_obj_t x68k_intenable(mp_obj_t self_in) {
+    uint16_t oldsr = mp_obj_get_int(self_in);
+    if (oldsr & 0x2000) {
+        /* restore interrupt mask only when in supervisor mode */
+        __asm__ volatile ("movew %0,%%sr" : : "d"(oldsr));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(x68k_intenable_obj, x68k_intenable);

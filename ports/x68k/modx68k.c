@@ -175,6 +175,9 @@ STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_IntVSync), MP_ROM_PTR(&x68k_type_intvsync) },
     { MP_ROM_QSTR(MP_QSTR_IntRaster), MP_ROM_PTR(&x68k_type_intraster) },
+    { MP_ROM_QSTR(MP_QSTR_IntDisable), MP_ROM_PTR(&x68k_type_intdisable) },
+    { MP_ROM_QSTR(MP_QSTR_intDisable), MP_ROM_PTR(&x68k_intdisable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_intEnable), MP_ROM_PTR(&x68k_intenable_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_mpyaddr), MP_ROM_PTR(&x68k_mpyaddr_obj) },
 

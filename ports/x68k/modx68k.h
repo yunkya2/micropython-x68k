@@ -45,5 +45,8 @@ extern const mp_obj_type_t x68k_d_obj_type;
 
 extern const mp_obj_type_t x68k_type_intvsync;
 extern const mp_obj_type_t x68k_type_intraster;
+extern const mp_obj_type_t x68k_type_intdisable;
+MP_DECLARE_CONST_FUN_OBJ_0(x68k_intdisable_obj);
+MP_DECLARE_CONST_FUN_OBJ_1(x68k_intenable_obj);
 
 #endif // MICROPY_INCLUDED_MODX68K_H
