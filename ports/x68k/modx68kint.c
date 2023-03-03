@@ -38,11 +38,10 @@
 /****************************************************************************/
 
 typedef enum {
+    INT_OPMINT,
     INT_TIMERD,
     INT_VSYNC,
     INT_CRTCRAS,
-    INT_HSYNC,
-    INT_PRINT,
     NUM_INT_TYPES,
 } int_type_t;
 
@@ -81,6 +80,210 @@ STATIC void int_helper(int_type_t type) {
         mp_sched_unlock();
     }
 }
+
+/****************************************************************************/
+
+typedef struct _x68k_intopm_t {
+    mp_obj_base_t base;
+} x68k_intopm_t;
+
+__attribute__((interrupt))
+STATIC void handle_intopm(void) {
+    int_helper(INT_OPMINT);
+}
+
+STATIC mp_obj_t x68k_intopm_callback(size_t n_args, const mp_obj_t *args) {
+    x68k_intopm_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t callback = mp_const_none;
+    if (n_args > 1) {
+        callback = args[1];
+    }
+    if (callback == mp_const_none) {
+        _iocs_opmintst(0);
+        x68k_int_data[INT_OPMINT].callback = mp_const_none;
+    } else if (mp_obj_is_callable(callback)) {
+        _iocs_opmintst(0);
+        x68k_int_data[INT_OPMINT].callback = callback;
+        _iocs_opmintst(handle_intopm);
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("callback must be None or a callable object"));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_intopm_callback_obj, 1, 2, x68k_intopm_callback);
+
+STATIC mp_obj_t x68k_intopm_init_helper(x68k_intopm_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_callback, ARG_arg, ARG_mode };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_callback, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_arg,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_mode,     MP_ARG_INT, {.u_int = 0} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args,
+                     MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    x68k_int_data[INT_OPMINT].arg = args[ARG_arg].u_obj;
+    x68k_int_data[INT_OPMINT].softirq = args[ARG_mode].u_int != 0;
+    mp_obj_t cb_arg[2] = { MP_OBJ_FROM_PTR(self), args[ARG_callback].u_obj };
+    x68k_intopm_callback(2, cb_arg);
+    return mp_const_none;
+}
+
+STATIC mp_obj_t x68k_intopm_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    x68k_intopm_t *self = MP_OBJ_TO_PTR(args[0]);
+    return x68k_intopm_init_helper(self, n_args - 1, args + 1, kw_args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_intopm_init_obj, 1, x68k_intopm_init);
+
+STATIC mp_obj_t x68k_intopm_deinit(mp_obj_t self_in) {
+    x68k_intopm_t *self = MP_OBJ_TO_PTR(self_in);
+    _iocs_opmintst(0);
+    x68k_int_data[INT_OPMINT].callback = mp_const_none;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(x68k_intopm_deinit_obj,x68k_intopm_deinit);
+
+STATIC mp_obj_t x68k_intopm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    x68k_intopm_t *self = mp_obj_malloc(x68k_intopm_t, type);
+    if (n_args > 0 || n_kw > 0) {
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+        x68k_intopm_init_helper(self, n_args, args, &kw_args);
+    }
+    return MP_OBJ_FROM_PTR(self);
+}
+
+STATIC mp_obj_t x68k_intopm___exit__(size_t n_args, const mp_obj_t *args) {
+    x68k_intopm_t *self = MP_OBJ_TO_PTR(args[0]);
+    _iocs_opmintst(0);
+    x68k_int_data[INT_OPMINT].callback = mp_const_none;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_intopm___exit___obj, 4, 4, x68k_intopm___exit__);
+
+STATIC const mp_rom_map_elem_t x68k_intopm_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&x68k_intopm_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&x68k_intopm_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&x68k_intopm_callback_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&x68k_intopm_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&x68k_intopm___exit___obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(x68k_intopm_locals_dict, x68k_intopm_locals_dict_table);
+
+const mp_obj_type_t x68k_type_intopm = {
+    { &mp_type_type },
+    .name = MP_QSTR_IntOpm,
+    .make_new = x68k_intopm_make_new,
+    .locals_dict = (mp_obj_dict_t *)&x68k_intopm_locals_dict,
+};
+
+/****************************************************************************/
+
+typedef struct _x68k_inttimerd_t {
+    mp_obj_base_t base;
+    mp_int_t unit;
+    mp_int_t cycle;
+} x68k_inttimerd_t;
+
+__attribute__((interrupt))
+STATIC void handle_inttimerd(void) {
+    int_helper(INT_TIMERD);
+}
+
+STATIC mp_obj_t x68k_inttimerd_callback(size_t n_args, const mp_obj_t *args) {
+    x68k_inttimerd_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t callback = mp_const_none;
+    if (n_args > 1) {
+        callback = args[1];
+    }
+    if (callback == mp_const_none) {
+        _iocs_timerdst(0, 0, 0);
+        x68k_int_data[INT_TIMERD].callback = mp_const_none;
+    } else if (mp_obj_is_callable(callback)) {
+        _iocs_timerdst(0, 0, 0);
+        x68k_int_data[INT_TIMERD].callback = callback;
+        _iocs_timerdst(handle_inttimerd, self->unit, self->cycle);
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("callback must be None or a callable object"));
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_inttimerd_callback_obj, 1, 2, x68k_inttimerd_callback);
+
+STATIC mp_obj_t x68k_inttimerd_init_helper(x68k_inttimerd_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_callback, ARG_arg, ARG_mode, ARG_unit, ARG_cycle };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_callback, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_arg,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_mode,     MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_unit,     MP_ARG_INT, {.u_int = 1 } },
+        { MP_QSTR_cycle,    MP_ARG_INT, {.u_int = 1 } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args,
+                     MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    x68k_int_data[INT_TIMERD].arg = args[ARG_arg].u_obj;
+    x68k_int_data[INT_TIMERD].softirq = args[ARG_mode].u_int != 0;
+    self->unit = args[ARG_unit].u_int;
+    self->cycle = args[ARG_cycle].u_int;
+    mp_obj_t cb_arg[2] = { MP_OBJ_FROM_PTR(self), args[ARG_callback].u_obj };
+    x68k_inttimerd_callback(2, cb_arg);
+    return mp_const_none;
+}
+
+STATIC mp_obj_t x68k_inttimerd_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    x68k_inttimerd_t *self = MP_OBJ_TO_PTR(args[0]);
+    return x68k_inttimerd_init_helper(self, n_args - 1, args + 1, kw_args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_inttimerd_init_obj, 1, x68k_inttimerd_init);
+
+STATIC mp_obj_t x68k_inttimerd_deinit(mp_obj_t self_in) {
+    x68k_inttimerd_t *self = MP_OBJ_TO_PTR(self_in);
+    _iocs_timerdst(0, 0, 0);
+    x68k_int_data[INT_TIMERD].callback = mp_const_none;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(x68k_inttimerd_deinit_obj,x68k_inttimerd_deinit);
+
+STATIC mp_obj_t x68k_inttimerd_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    x68k_inttimerd_t *self = mp_obj_malloc(x68k_inttimerd_t, type);
+    if (n_args > 0 || n_kw > 0) {
+        mp_map_t kw_args;
+        mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+        x68k_inttimerd_init_helper(self, n_args, args, &kw_args);
+    }
+    return MP_OBJ_FROM_PTR(self);
+}
+
+STATIC mp_obj_t x68k_inttimerd___exit__(size_t n_args, const mp_obj_t *args) {
+    x68k_inttimerd_t *self = MP_OBJ_TO_PTR(args[0]);
+    _iocs_timerdst(0, 0, 0);
+    x68k_int_data[INT_TIMERD].callback = mp_const_none;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_inttimerd___exit___obj, 4, 4, x68k_inttimerd___exit__);
+
+STATIC const mp_rom_map_elem_t x68k_inttimerd_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&x68k_inttimerd_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&x68k_inttimerd_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&x68k_inttimerd_callback_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&x68k_inttimerd_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&x68k_inttimerd___exit___obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(x68k_inttimerd_locals_dict, x68k_inttimerd_locals_dict_table);
+
+const mp_obj_type_t x68k_type_inttimerd = {
+    { &mp_type_type },
+    .name = MP_QSTR_IntTimerD,
+    .make_new = x68k_inttimerd_make_new,
+    .locals_dict = (mp_obj_dict_t *)&x68k_inttimerd_locals_dict,
+};
 
 /****************************************************************************/
 
