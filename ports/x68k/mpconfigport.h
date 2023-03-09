@@ -122,9 +122,6 @@ typedef long mp_off_t;
 #include <alloca.h>
 
 // Additional definitions for x68k
-#ifndef PATH_MAX
-#define PATH_MAX        4096
-#endif
 #ifndef O_BINARY
 #define O_BINARY        0x10000
 #endif

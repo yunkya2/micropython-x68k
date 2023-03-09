@@ -26,7 +26,6 @@
 
 // options to control how MicroPython is built
 
-#define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_PERSISTENT_CODE_SAVE (1)
 
@@ -167,9 +166,6 @@ typedef mp_off_t off_t;
 #endif
 
 // Additional definitions for x68k
-#ifndef PATH_MAX
-#define PATH_MAX        4096
-#endif
 #ifndef O_BINARY
 #define O_BINARY        0x10000
 #endif
