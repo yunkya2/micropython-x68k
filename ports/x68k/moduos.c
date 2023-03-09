@@ -71,19 +71,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_unsetenv_obj, mp_uos_unsetenv);
 
 STATIC mp_obj_t mp_uos_system(mp_obj_t cmd_in) {
     const char *cmd = mp_obj_str_get_str(cmd_in);
-
-    int len = strlen(cmd);
-    char *cmdname = malloc(len + 256);
-    char *cmdarg = malloc(len);
-    strcpy(cmdname, cmd);
-
-    int ret = _dos_exec2(2, cmdname, cmdarg, 0);
-    if (ret >= 0) {
-        ret = _dos_exec2(0, cmdname, cmdarg, 0);
-    }
-
-    free(cmdname);
-    free(cmdarg);
+    int ret;
+    
+    ret = system(cmd);
 
     if (ret == -1) {
         mp_raise_OSError(errno);
