@@ -313,3 +313,8 @@ MicroPythonのネイティブ/バイパーコードエミッター機能をサ�
 * `mpycross.x` はバイトコードへのコンパイルを事前に行うことで、プログラムの実行開始までの時間を短縮することができます。通常のPythonモジュールの `.py`ファイルを元に、`.mpy`ファイルを生成します。
   * 例: `mpycross sample/sprite.py`
     * sprite.py と同じディレクトリに sprite.mpy を生成します。
+
+## ライセンス
+
+MicroPython 本体は MITライセンスで配布されています。
+X680x0ハードウェア固有の実装部分についても、MicroPython 本体のライセンス条件に従います。
