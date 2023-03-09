@@ -164,11 +164,3 @@ typedef int ssize_t;
 typedef mp_off_t off_t;
 
 #endif
-
-// Additional definitions for x68k
-#ifndef O_BINARY
-#define O_BINARY        0x10000
-#endif
-#ifndef O_TEXT
-#define O_TEXT          0x20000
-#endif
