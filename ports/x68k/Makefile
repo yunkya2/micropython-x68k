@@ -5,7 +5,7 @@ CROSS ?= 1
 include $(TOP)/py/py.mk
 
 ifeq ($(CROSS), 1)
-CROSS_COMPILE ?= m68k-elf-
+CROSS_COMPILE ?= m68k-xelf-
 endif
 
 INC += -I.

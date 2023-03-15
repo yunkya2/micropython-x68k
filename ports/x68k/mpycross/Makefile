@@ -3,7 +3,7 @@ include ../../../py/mkenv.mk
 CROSS ?= 1
 
 ifeq ($(CROSS), 1)
-CROSS_COMPILE ?= m68k-elf-
+CROSS_COMPILE ?= m68k-xelf-
 endif
 
 # qstr definitions (must come before including py.mk)
