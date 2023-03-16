@@ -8,6 +8,8 @@ ifeq ($(CROSS), 1)
 CROSS_COMPILE ?= m68k-xelf-
 endif
 
+export LC_MESSAGES=C
+
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)

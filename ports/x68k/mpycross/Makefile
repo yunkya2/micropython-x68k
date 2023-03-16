@@ -6,6 +6,8 @@ ifeq ($(CROSS), 1)
 CROSS_COMPILE ?= m68k-xelf-
 endif
 
+export LC_MESSAGES=C
+
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = $(TOP)/mpy-cross/qstrdefsport.h
 
