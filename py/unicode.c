@@ -114,6 +114,47 @@ size_t utf8_charlen(const byte *str, size_t len) {
 }
 
 #endif
+#if MICROPY_PY_BUILTINS_STR_SJIS
+
+unichar utf8_get_char(const byte *s) {
+    unichar ord = *s++;
+    if (!SJIS_IS_NONASCII(ord)) {
+        return ord;
+    }
+
+    ord = (ord << 8) | (*s++);
+    return ord;
+}
+
+const byte *utf8_next_char(const byte *s) {
+    if (!SJIS_IS_NONASCII(*s)) {
+        return s + 1;
+    } else {
+        return s + 2;
+    }
+}
+
+mp_uint_t utf8_ptr_to_index(const byte *s, const byte *ptr) {
+    mp_uint_t i;
+    for (i = 0; ptr > s; s++, i++) {
+        if (SJIS_IS_NONASCII(*s)) {
+            s++;
+        }
+    }
+
+    return i;
+}
+
+size_t utf8_charlen(const byte *str, size_t len) {
+    size_t charlen = 0;
+    for (const byte *top = str + len; str < top; ++str, ++charlen) {
+        if (SJIS_IS_NONASCII(*str)) {
+            str++;
+        }
+    }
+    return charlen;
+}
+#endif
 
 // Be aware: These unichar_is* functions are actually ASCII-only!
 bool unichar_isspace(unichar c) {
@@ -203,6 +244,23 @@ bool utf8_check(const byte *p, size_t len) {
                 // mismatch
                 return 0;
             }
+        }
+    }
+    return need == 0; // no pending fragments allowed
+}
+
+#endif
+#if MICROPY_PY_BUILTINS_STR_SJIS
+
+bool utf8_check(const byte *p, size_t len) {
+    uint8_t need = 0;
+    const byte *end = p + len;
+    for (; p < end; p++) {
+        byte c = *p;
+        if (need) {
+            need--;
+        } else {
+            need = SJIS_IS_NONASCII(c);
         }
     }
     return need == 0; // no pending fragments allowed

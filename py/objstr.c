@@ -117,12 +117,12 @@ STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         return;
     }
     #endif
-    #if !MICROPY_PY_BUILTINS_STR_UNICODE
+    #if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_BUILTINS_STR_SJIS)
     bool is_bytes = mp_obj_is_type(self_in, &mp_type_bytes);
     #else
     bool is_bytes = true;
     #endif
-    if (kind == PRINT_RAW || (!MICROPY_PY_BUILTINS_STR_UNICODE && kind == PRINT_STR && !is_bytes)) {
+    if (kind == PRINT_RAW || (!(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS) && kind == PRINT_STR && !is_bytes)) {
         print->print_strn(print->data, (const char *)str_data, str_len);
     } else {
         if (is_bytes) {
@@ -161,7 +161,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 if (str_hash == 0) {
                     str_hash = qstr_compute_hash(str_data, str_len);
                 }
-                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK || MICROPY_PY_BUILTINS_STR_SJIS_CHECK
                 if (!utf8_check(str_data, str_len)) {
                     mp_raise_msg(&mp_type_UnicodeError, NULL);
                 }
@@ -180,7 +180,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
             } else {
                 mp_buffer_info_t bufinfo;
                 mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
-                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK || MICROPY_PY_BUILTINS_STR_SJIS_CHECK
                 if (!utf8_check(bufinfo.buf, bufinfo.len)) {
                     mp_raise_msg(&mp_type_UnicodeError, NULL);
                 }
@@ -413,7 +413,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 }
 
-#if !MICROPY_PY_BUILTINS_STR_UNICODE
+#if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
 // objstrunicode defines own version
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
     mp_obj_t index, bool is_slice) {
@@ -439,7 +439,7 @@ STATIC mp_obj_t bytes_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         #endif
         size_t index_val = mp_get_index(type, self_len, index, false);
         // If we have unicode enabled the type will always be bytes, so take the short cut.
-        if (MICROPY_PY_BUILTINS_STR_UNICODE || type == &mp_type_bytes) {
+        if (MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS || type == &mp_type_bytes) {
             return MP_OBJ_NEW_SMALL_INT(self_data[index_val]);
         } else {
             return mp_obj_new_str_via_qstr((char *)&self_data[index_val], 1);
@@ -730,7 +730,7 @@ STATIC mp_obj_t str_finder(size_t n_args, const mp_obj_t *args, int direction, b
         }
     } else {
         // found
-        #if MICROPY_PY_BUILTINS_STR_UNICODE
+        #if MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS
         if (self_type == &mp_type_str) {
             return MP_OBJ_NEW_SMALL_INT(utf8_ptr_to_index(haystack, p));
         }
@@ -1943,7 +1943,7 @@ mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_u
 STATIC const mp_rom_map_elem_t str8_locals_dict_table[] = {
     #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj) },
-    #if !MICROPY_PY_BUILTINS_STR_UNICODE
+    #if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
     // If we have separate unicode type, then here we have methods only
     // for bytes type, and it should not have encode() methods. Otherwise,
     // we have non-compliant-but-practical bytestring type, which shares
@@ -1990,7 +1990,7 @@ STATIC const mp_rom_map_elem_t str8_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(str8_locals_dict, str8_locals_dict_table);
 
-#if !MICROPY_PY_BUILTINS_STR_UNICODE
+#if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
 const mp_obj_type_t mp_type_str = {
@@ -2195,7 +2195,7 @@ typedef struct _mp_obj_str8_it_t {
     size_t cur;
 } mp_obj_str8_it_t;
 
-#if !MICROPY_PY_BUILTINS_STR_UNICODE
+#if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
 STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     mp_obj_str8_it_t *self = MP_OBJ_TO_PTR(self_in);
     GET_STR_DATA_LEN(self->str, str, len);

@@ -161,6 +161,22 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
     }
     return mp_obj_new_str_via_qstr((char *)str, len);
+    #elif MICROPY_PY_BUILTINS_STR_SJIS
+    mp_uint_t c = mp_obj_get_int(o_in);
+    uint8_t str[2];
+    int len = 0;
+
+    if (c < 0x100 && !(SJIS_IS_NONASCII(c))) {
+        *str = c;
+        len = 1;
+    } else if (c >= 0x8000 && c <= 0xffff) {
+        str[0] = (c >> 8);
+        str[1] = (c & 0xff);
+        len = 2;
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range"));
+    }
+    return mp_obj_new_str_via_qstr((char *)str, len);
     #else
     mp_int_t ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0xff) {
@@ -357,7 +373,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_oct_obj, mp_builtin_oct);
 STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     size_t len;
     const byte *str = (const byte *)mp_obj_str_get_data(o_in, &len);
-    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS
     if (mp_obj_is_str(o_in)) {
         len = utf8_charlen(str, len);
         if (len == 1) {
@@ -767,7 +783,7 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SyntaxError), MP_ROM_PTR(&mp_type_SyntaxError) },
     { MP_ROM_QSTR(MP_QSTR_SystemExit), MP_ROM_PTR(&mp_type_SystemExit) },
     { MP_ROM_QSTR(MP_QSTR_TypeError), MP_ROM_PTR(&mp_type_TypeError) },
-    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS
     { MP_ROM_QSTR(MP_QSTR_UnicodeError), MP_ROM_PTR(&mp_type_UnicodeError) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ValueError), MP_ROM_PTR(&mp_type_ValueError) },

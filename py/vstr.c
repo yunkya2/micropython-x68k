@@ -168,6 +168,15 @@ void vstr_add_char(vstr_t *vstr, unichar c) {
         buf[2] = ((c >> 6) & 0x3F) | 0x80;
         buf[3] = (c & 0x3F) | 0x80;
     }
+    #elif MICROPY_PY_BUILTINS_STR_SJIS
+    if (c < 0x100) {
+        byte *buf = (byte *)vstr_add_len(vstr, 1);
+        *buf = (byte)c;
+    } else {
+        byte *buf = (byte *)vstr_add_len(vstr, 2);
+        buf[0] = (c >> 8);
+        buf[1] = (c & 0xff);
+    }
     #else
     vstr_add_byte(vstr, c);
     #endif
@@ -205,9 +214,42 @@ void vstr_ins_byte(vstr_t *vstr, size_t byte_pos, byte b) {
 }
 
 void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr) {
-    // TODO UNICODE
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    // TODO: Can this be simplified and deduplicated?
+    // Is it worth just calling vstr_add_len(vstr, 4)?
+    if (chr < 0x80) {
+        char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
+        *s = (char)chr;
+    } else if (chr < 0x800) {
+        char *s = vstr_ins_blank_bytes(vstr, char_pos, 2);
+        s[0] = (chr >> 6) | 0xC0;
+        s[1] = (chr & 0x3F) | 0x80;
+    } else if (chr < 0x10000) {
+        char *s = vstr_ins_blank_bytes(vstr, char_pos, 3);
+        s[0] = (chr >> 12) | 0xE0;
+        s[1] = ((chr >> 6) & 0x3F) | 0x80;
+        s[2] = (chr & 0x3F) | 0x80;
+    } else {
+        assert(chr < 0x110000);
+        char *s = vstr_ins_blank_bytes(vstr, char_pos, 4);
+        s[0] = (chr >> 18) | 0xF0;
+        s[1] = ((chr >> 12) & 0x3F) | 0x80;
+        s[2] = ((chr >> 6) & 0x3F) | 0x80;
+        s[3] = (chr & 0x3F) | 0x80;
+    }
+    #elif MICROPY_PY_BUILTINS_STR_SJIS
+    if (chr < 0x100) {
+        char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
+        *s = (char)chr;
+    } else {
+        char *s = vstr_ins_blank_bytes(vstr, char_pos, 2);
+        s[0] = (chr >> 8);
+        s[1] = (chr & 0xff);
+    }
+    #else
     char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
     *s = chr;
+    #endif
 }
 
 void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut) {

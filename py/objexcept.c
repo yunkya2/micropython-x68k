@@ -353,7 +353,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
 #endif
   MP_DEFINE_EXCEPTION(ValueError, Exception)
-#if MICROPY_PY_BUILTINS_STR_UNICODE
+#if MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS
     MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
     //TODO: Implement more UnicodeError subclasses which take arguments
 #endif

@@ -32,7 +32,7 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 
-#if MICROPY_PY_BUILTINS_STR_UNICODE
+#if MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS
 
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
@@ -134,6 +134,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     const byte *s, *top = self_data + self_len;
     if (i < 0) {
         // Negative indexing is performed by counting from the end of the string.
+#if MICROPY_PY_BUILTINS_STR_UNICODE 
         for (s = top - 1; i; --s) {
             if (s < self_data) {
                 if (is_slice) {
@@ -146,6 +147,19 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
             }
         }
         ++s;
+#elif MICROPY_PY_BUILTINS_STR_SJIS
+        size_t len = utf8_charlen(self_data, self_len);
+        i = len + i;
+        if (i < 0) {
+            if (is_slice) {
+                return self_data;
+            }
+            mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("string index out of range"));
+        }
+        for (s = self_data; i > 0; i--) {
+            s = utf8_next_char(s);
+        }
+#endif
     } else {
         // Positive indexing, correspondingly, counts from the start of the string.
         // It's assumed that negative indexing will generally be used with small
@@ -164,11 +178,16 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
             if (i-- == 0) {
                 break;
             }
+#if MICROPY_PY_BUILTINS_STR_UNICODE 
             // Then skip UTF-8 char
             ++s;
             while (UTF8_IS_CONT(*s)) {
                 ++s;
             }
+#elif MICROPY_PY_BUILTINS_STR_SJIS
+            // Then skip SJIS char
+            s += SJIS_IS_NONASCII(*s) ? 2 : 1;
+#endif
         }
     }
     return s;
@@ -212,6 +231,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         }
         #endif
         const byte *s = str_index_to_ptr(type, self_data, self_len, index, false);
+#if MICROPY_PY_BUILTINS_STR_UNICODE 
         int len = 1;
         if (UTF8_IS_NONASCII(*s)) {
             // Count the number of 1 bits (after the first)
@@ -219,6 +239,9 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                 ++len;
             }
         }
+#elif MICROPY_PY_BUILTINS_STR_SJIS
+        int len = SJIS_IS_NONASCII(*s) ? 2 : 1;
+#endif
         return mp_obj_new_str_via_qstr((const char *)s, len); // This will create a one-character string
     } else {
         return MP_OBJ_NULL; // op not supported
@@ -314,4 +337,4 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_bu
     return MP_OBJ_FROM_PTR(o);
 }
 
-#endif // MICROPY_PY_BUILTINS_STR_UNICODE
+#endif // MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS

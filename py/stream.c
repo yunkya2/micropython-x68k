@@ -108,7 +108,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
 
     const mp_stream_p_t *stream_p = mp_get_stream(args[0]);
 
-    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS
     if (stream_p->is_text) {
         // We need to read sz number of unicode characters.  Because we don't have any
         // buffering, and because the stream API can only read bytes, we must read here
@@ -156,6 +156,7 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
             for (mp_uint_t off = last_buf_offset;;) {
                 byte b = vstr.buf[off];
                 int n;
+#if MICROPY_PY_BUILTINS_STR_UNICODE
                 if (!UTF8_IS_NONASCII(b)) {
                     // 1-byte ASCII char
                     n = 1;
@@ -172,6 +173,15 @@ STATIC mp_obj_t stream_read_generic(size_t n_args, const mp_obj_t *args, byte fl
                     // TODO
                     n = 5;
                 }
+#elif MICROPY_PY_BUILTINS_STR_SJIS
+                if (!SJIS_IS_NONASCII(b)) {
+                    // 1-byte ASCII char
+                    n = 1;
+                } else {
+                    // 2-byte char
+                    n = 2;
+                }
+#endif
                 if (off + n <= vstr.len) {
                     // got a whole char in n bytes
                     off += n;

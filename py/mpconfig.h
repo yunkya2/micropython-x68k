@@ -1002,6 +1002,16 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_STR_UNICODE_CHECK (MICROPY_PY_BUILTINS_STR_UNICODE)
 #endif
 
+// Whether str object is proper Shift-JIS
+#ifndef MICROPY_PY_BUILTINS_STR_SJIS
+#define MICROPY_PY_BUILTINS_STR_SJIS (0)
+#endif
+
+// Whether to check for valid Shift-JIS when converting bytes to str
+#ifndef MICROPY_PY_BUILTINS_STR_SJIS_CHECK
+#define MICROPY_PY_BUILTINS_STR_SJIS_CHECK (MICROPY_PY_BUILTINS_STR_SJIS)
+#endif
+
 // Whether str.center() method provided
 #ifndef MICROPY_PY_BUILTINS_STR_CENTER
 #define MICROPY_PY_BUILTINS_STR_CENTER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)

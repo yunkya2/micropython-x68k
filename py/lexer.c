@@ -480,7 +480,7 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     }
                 }
                 if (c != MP_LEXER_EOF) {
-                    #if MICROPY_PY_BUILTINS_STR_UNICODE
+                    #if MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS
                     if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
                         // Valid unicode character in a str object.
                         vstr_add_char(&lex->vstr, c);

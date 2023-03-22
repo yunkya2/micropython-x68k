@@ -135,7 +135,7 @@ typedef uint32_t unichar;
 typedef uint unichar;
 #endif
 
-#if MICROPY_PY_BUILTINS_STR_UNICODE
+#if MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS
 unichar utf8_get_char(const byte *s);
 const byte *utf8_next_char(const byte *s);
 size_t utf8_charlen(const byte *str, size_t len);
@@ -166,6 +166,10 @@ unichar unichar_toupper(unichar c);
 mp_uint_t unichar_xdigit_value(unichar c);
 #define UTF8_IS_NONASCII(ch) ((ch) & 0x80)
 #define UTF8_IS_CONT(ch) (((ch) & 0xC0) == 0x80)
+#if MICROPY_PY_BUILTINS_STR_SJIS
+#define SJIS_IS_NONASCII(ch) ((((ch) & 0xff) >= 0x80 && ((ch) & 0xff) <= 0x9f) || \
+                              (((ch) & 0xff) >= 0xe0))
+#endif
 
 /** variable string *********************************************/
 

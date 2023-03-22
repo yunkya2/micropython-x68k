@@ -521,7 +521,7 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
 // may return MP_OBJ_NULL
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
     if (
-        #if !MICROPY_PY_BUILTINS_STR_UNICODE
+        #if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
         // It's simple - unicode is slow, non-unicode is fast
         mp_obj_is_str(o_in) ||
         #endif
