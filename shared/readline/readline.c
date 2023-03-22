@@ -98,6 +98,9 @@ typedef struct _readline_t {
     int hist_cur;
     size_t cursor_pos;
     char escape_seq_buf[1];
+#if MICROPY_PY_BUILTINS_STR_SJIS
+    char sjis_1stbyte;
+#endif
     #if MICROPY_REPL_AUTO_INDENT
     uint8_t auto_indent_state;
     #endif
@@ -106,12 +109,44 @@ typedef struct _readline_t {
 
 STATIC readline_t rl;
 
+#if MICROPY_PY_BUILTINS_STR_SJIS
+STATIC size_t sjis_cursor_fixup(const byte *line, size_t pos, int offset)
+{
+    int len1 = utf8_charlen(line, pos);
+    int len2 = utf8_charlen(line, pos + offset);
+    return (len1 > 0) && (len1 == len2);
+}
+#endif
+
 #if MICROPY_REPL_EMACS_WORDS_MOVE
 STATIC size_t cursor_count_word(int forward) {
     const char *line_buf = vstr_str(rl.line);
     size_t pos = rl.cursor_pos;
     bool in_word = false;
 
+#if MICROPY_PY_BUILTINS_STR_SJIS
+    if (forward) {
+        while (pos < vstr_len(rl.line)) {
+            if (unichar_isalnum(line_buf[pos]) ||
+                SJIS_IS_NONASCII(line_buf[pos])) {
+                in_word = true;
+            } else if (in_word) {
+                break;
+            }
+            pos += SJIS_IS_NONASCII(line_buf[pos]) ? 2 : 1;
+        }
+    } else {
+        while (pos > 0) {
+            int step = sjis_cursor_fixup(line_buf, pos, -1) + 1;
+            if (step == 2 || unichar_isalnum(line_buf[pos - 1])) {
+                in_word = true;
+            } else if (in_word) {
+                break;
+            }
+            pos -= step;
+        }
+    }
+#else
     for (;;) {
         // if moving backwards and we've reached 0... break
         if (!forward && pos == 0) {
@@ -130,6 +165,7 @@ STATIC size_t cursor_count_word(int forward) {
 
         pos += forward ? forward : -1;
     }
+#endif
 
     return forward ? pos - rl.cursor_pos : rl.cursor_pos - pos;
 }
@@ -140,6 +176,16 @@ int readline_process_char(int c) {
     int redraw_step_back = 0;
     bool redraw_from_cursor = false;
     int redraw_step_forward = 0;
+#if MICROPY_PY_BUILTINS_STR_SJIS
+    if (rl.sjis_1stbyte != 0) {
+        // SJIS 2bytes character
+        vstr_ins_char(rl.line, rl.cursor_pos, (rl.sjis_1stbyte << 8) | c);
+        // set redraw parameters
+        redraw_from_cursor = true;
+        redraw_step_forward = 2;
+        rl.sjis_1stbyte = 0;
+    } else
+#endif
     if (rl.escape_seq == ESEQ_NONE) {
         if (CHAR_CTRL_A <= c && c <= CHAR_CTRL_E && vstr_len(rl.line) == rl.orig_line_len) {
             // control character with empty line
@@ -219,6 +265,9 @@ int readline_process_char(int c) {
                 int nspace = 1;
                 #endif
 
+#if MICROPY_PY_BUILTINS_STR_SJIS
+                nspace += sjis_cursor_fixup(vstr_str(rl.line), rl.cursor_pos, -nspace);
+#endif
                 // do the backspace
                 vstr_cut_out_bytes(rl.line, rl.cursor_pos - nspace, nspace);
                 // set redraw parameters
@@ -273,7 +322,13 @@ int readline_process_char(int c) {
                 redraw_step_forward = compl_len;
             }
         #endif
+#if MICROPY_PY_BUILTINS_STR_SJIS
+        } else if (SJIS_IS_NONASCII(c)) {
+            rl.sjis_1stbyte = c;
+        } else if (c >= 32) {
+#else
         } else if (32 <= c && c <= 126) {
+#endif
             // printable character
             vstr_ins_char(rl.line, rl.cursor_pos, c);
             // set redraw parameters
@@ -403,7 +458,15 @@ end_key:
 delete_key:
 #endif
                 if (rl.cursor_pos < rl.line->len) {
+#if MICROPY_PY_BUILTINS_STR_SJIS
+                    if (SJIS_IS_NONASCII(vstr_str(rl.line)[rl.cursor_pos])) {
+                        vstr_cut_out_bytes(rl.line, rl.cursor_pos, 2);
+                    } else {
+                        vstr_cut_out_bytes(rl.line, rl.cursor_pos, 1);
+                    }
+#else
                     vstr_cut_out_bytes(rl.line, rl.cursor_pos, 1);
+#endif
                     redraw_from_cursor = true;
                 }
             } else {
@@ -451,6 +514,9 @@ redraw:
 
     // redraw command prompt, efficiently
     if (redraw_step_back > 0) {
+#if MICROPY_PY_BUILTINS_STR_SJIS
+        redraw_step_back += sjis_cursor_fixup(vstr_str(rl.line), rl.cursor_pos, -redraw_step_back);
+#endif
         mp_hal_move_cursor_back(redraw_step_back);
         rl.cursor_pos -= redraw_step_back;
     }
@@ -465,6 +531,9 @@ redraw:
         mp_hal_move_cursor_back(rl.line->len - (rl.cursor_pos + redraw_step_forward));
         rl.cursor_pos += redraw_step_forward;
     } else if (redraw_step_forward > 0) {
+#if MICROPY_PY_BUILTINS_STR_SJIS
+        redraw_step_forward += sjis_cursor_fixup(vstr_str(rl.line), rl.cursor_pos + redraw_step_forward, 1);
+#endif
         // draw over old chars to move cursor forwards
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, redraw_step_forward);
         rl.cursor_pos += redraw_step_forward;
@@ -538,6 +607,9 @@ void readline_init(vstr_t *line, const char *prompt) {
     rl.orig_line_len = line->len;
     rl.escape_seq = ESEQ_NONE;
     rl.escape_seq_buf[0] = 0;
+#if MICROPY_PY_BUILTINS_STR_SJIS
+    rl.sjis_1stbyte = 0;
+#endif
     rl.hist_cur = -1;
     rl.cursor_pos = rl.orig_line_len;
     rl.prompt = prompt;
