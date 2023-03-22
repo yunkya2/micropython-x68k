@@ -59,6 +59,9 @@
 
 #define MICROPY_PY_ASYNC_AWAIT                  (0)
 #define MICROPY_PY_BUILTINS_SET                 (0)
+#define MICROPY_PY_BUILTINS_STR_UNICODE         (0)
+#define MICROPY_PY_BUILTINS_STR_SJIS            (1)
+#define MICROPY_PY_BUILTINS_STR_SJIS_CHECK      (1)
 #define MICROPY_PY_ATTRTUPLE                    (1)
 #define MICROPY_PY_COLLECTIONS                  (0)
 #define MICROPY_PY_MATH                         (1)

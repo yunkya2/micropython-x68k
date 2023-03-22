@@ -75,7 +75,9 @@
 #define MICROPY_USE_INTERNAL_PRINTF (0)
 
 #define MICROPY_PY_FSTRINGS         (1)
-#define MICROPY_PY_BUILTINS_STR_UNICODE (1)
+#define MICROPY_PY_BUILTINS_STR_UNICODE         (0)
+#define MICROPY_PY_BUILTINS_STR_SJIS            (1)
+#define MICROPY_PY_BUILTINS_STR_SJIS_CHECK      (1)
 
 #if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
 // Fall back to setjmp() implementation for discovery of GC pointers in registers.
