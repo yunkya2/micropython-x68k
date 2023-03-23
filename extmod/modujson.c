@@ -234,6 +234,12 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
                             }
                         }
                     }
+#if MICROPY_PY_BUILTINS_STR_SJIS
+                    if (SJIS_IS_NONASCII(c)) {
+                        vstr_add_byte(&vstr, c);
+                        c = S_NEXT(s);
+                    }
+#endif
                     vstr_add_byte(&vstr, c);
                 str_cont:
                     S_NEXT(s);
