@@ -378,7 +378,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     if (ret == NOTHING_EXECUTED || inspect) {
         // prompt_read_history();
         mp_hal_setfnckey();
-        ret = pyexec_friendly_repl();
+        do {
+            ret = pyexec_friendly_repl();
+        } while (ret == 0);
         mp_hal_restorefnckey();
         // prompt_write_history();
     }
