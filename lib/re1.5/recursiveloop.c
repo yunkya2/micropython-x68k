@@ -5,10 +5,11 @@
 #include "re1.5.h"
 
 static int
-recursiveloop(char *pc, const char *sp, Subject *input, const char **subp, int nsubp)
+recursiveloop(unichar *pc, const char *sp, Subject *input, const char **subp, int nsubp)
 {
 	const char *old;
 	int off;
+	unichar ch;
 
 	re1_5_stack_chk();
 
@@ -20,24 +21,25 @@ recursiveloop(char *pc, const char *sp, Subject *input, const char **subp, int n
 		}
 		switch(*pc++) {
 		case Char:
-			if(*sp != *pc++)
+			ch = utf8_get_char(sp);
+			if(ch != *pc++)
 				return 0;
 			MP_FALLTHROUGH
 		case Any:
-			sp++;
+			sp = utf8_next_char(sp);
 			continue;
 		case Class:
 		case ClassNot:
 			if (!_re1_5_classmatch(pc, sp))
 				return 0;
-			pc += *(unsigned char*)pc * 2 + 1;
-			sp++;
+			pc += *pc * 2 + 1;
+			sp = utf8_next_char(sp);
 			continue;
-                case NamedClass:
+		case NamedClass:
 			if (!_re1_5_namedclassmatch(pc, sp))
 				return 0;
 			pc++;
-			sp++;
+			sp = utf8_next_char(sp);
 			continue;
 		case Match:
 			return 1;

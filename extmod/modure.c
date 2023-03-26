@@ -117,8 +117,8 @@ STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span
     if (start != NULL) {
         // have a match for this group
         const char *begin = mp_obj_str_get_str(self->str);
-        s = start - begin;
-        e = self->caps[no * 2 + 1] - begin;
+        s = utf8_ptr_to_index(begin, start);
+        e = utf8_ptr_to_index(begin, self->caps[no * 2 + 1]);
     }
 
     span[0] = mp_obj_new_int(s);
@@ -349,7 +349,8 @@ STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
                 }
             } else {
                 // Just add the current byte from the replacement string
-                vstr_add_byte(&vstr_return, *repl++);
+                vstr_add_char(&vstr_return, utf8_get_char(repl));
+                repl = utf8_next_char(repl);
             }
         }
 
@@ -406,7 +407,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     if (size == -1) {
         goto error;
     }
-    mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, char, size, &re_type);
+    mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, unichar, size, &re_type);
     #if MICROPY_PY_URE_DEBUG
     int flags = 0;
     if (n_args > 1) {

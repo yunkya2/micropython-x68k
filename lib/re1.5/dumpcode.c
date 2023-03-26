@@ -7,7 +7,7 @@
 void re1_5_dumpcode(ByteProg *prog)
 {
     int pc = 0;
-    char *code = prog->insts;
+    unichar *code = prog->insts;
     while (pc < prog->bytelen) {
                 printf("%2d: ", pc);
                 switch(code[pc++]) {
@@ -27,7 +27,11 @@ void re1_5_dumpcode(ByteProg *prog)
                         pc++;
                         break;
                 case Char:
-                        printf("char %c\n", code[pc++]);
+                        if (code[pc] < 0x100) {
+                                printf("char %c\n", code[pc++]);
+                        } else {
+                                printf("char 0x%x\n", code[pc++]);
+                        }
                         break;
                 case Any:
                         printf("any\n");

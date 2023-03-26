@@ -5,13 +5,13 @@
 #include "re1.5.h"
 
 #define INSERT_CODE(at, num, pc) \
-    ((code ? memmove(code + at + num, code + at, pc - at) : 0), pc += num)
+    ((code ? memmove(&code[at + num], &code[at], (pc - at) * sizeof(code[0])) : 0), pc += num)
 #define REL(at, to) (to - at - 2)
 #define EMIT(at, byte) (code ? (code[at] = byte) : (at))
 #define EMIT_CHECKED(at, byte) (_emit_checked(at, code, byte, &err))
 #define PC (prog->bytelen)
 
-static void _emit_checked(int at, char *code, int val, bool *err) {
+static void _emit_checked(int at, unichar *code, int val, bool *err) {
     *err |= val != (int8_t)val;
     if (code) {
         code[at] = val;
@@ -20,13 +20,13 @@ static void _emit_checked(int at, char *code, int val, bool *err) {
 
 static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
 {
-    char *code = sizecode ? NULL : prog->insts;
+    unichar *code = sizecode ? NULL : prog->insts;
     bool err = false;
     int start = PC;
     int term = PC;
     int alt_label = 0;
 
-    for (; *re && *re != ')'; re++) {
+    for (; *re && *re != ')'; re = utf8_next_char(re)) {
         switch (*re) {
         case '\\':
             re++;
@@ -34,7 +34,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             if ((*re | 0x20) == 'd' || (*re | 0x20) == 's' || (*re | 0x20) == 'w') {
                 term = PC;
                 EMIT(PC++, NamedClass);
-                EMIT(PC++, *re);
+                EMIT(PC++, utf8_get_char(re));
                 prog->len++;
                 break;
             }
@@ -42,7 +42,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
         default:
             term = PC;
             EMIT(PC++, Char);
-            EMIT(PC++, *re);
+            EMIT(PC++, utf8_get_char(re));
             prog->len++;
             break;
         case '.':
@@ -62,16 +62,17 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             }
             PC++; // Skip # of pair byte
             prog->len++;
-            for (cnt = 0; *re != ']'; re++, cnt++) {
+            for (cnt = 0; *re != ']'; re = utf8_next_char(re), cnt++) {
                 if (*re == '\\') {
                     ++re;
                 }
                 if (!*re) return NULL;
-                EMIT(PC++, *re);
-                if (re[1] == '-' && re[2] != ']') {
-                    re += 2;
+                EMIT(PC++, utf8_get_char(re));
+                const char *re2 = utf8_next_char(re);
+                if (re2[0] == '-' && re2[1] != ']') {
+                    re = &re2[1];
                 }
-                EMIT(PC++, *re);
+                EMIT(PC++, utf8_get_char(re));
             }
             EMIT_CHECKED(term + 1, cnt);
             break;
