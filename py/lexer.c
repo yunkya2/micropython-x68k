@@ -500,6 +500,16 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     }
                 }
             } else {
+                #if MICROPY_PY_BUILTINS_STR_SJIS
+                unichar c = CUR_CHAR(lex);
+                if (SJIS_IS_NONASCII(c)) {
+                    vstr_add_byte(&lex->vstr, c);
+                    next_char(lex);
+                    if (is_end(lex)) {
+                        break;
+                    }
+                }
+                #endif
                 // Add the "character" as a byte so that we remain 8-bit clean.
                 // This way, strings are parsed correctly whether or not they contain utf-8 chars.
                 vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
