@@ -94,6 +94,11 @@
 #define MICROPY_PY_UJSON                        (1)
 #define MICROPY_PY_USELECT                      (0)
 
+#define MICROPY_PY_URE                          (1)
+#define MICROPY_PY_URE_MATCH_GROUPS             (1)
+#define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
+#define MICROPY_PY_URE_SUB                      (1)
+
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
