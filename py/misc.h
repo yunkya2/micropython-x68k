@@ -138,6 +138,7 @@ typedef uint unichar;
 #if MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS
 unichar utf8_get_char(const byte *s);
 const byte *utf8_next_char(const byte *s);
+mp_uint_t utf8_ptr_to_index(const byte *s, const byte *ptr);
 size_t utf8_charlen(const byte *str, size_t len);
 #else
 static inline unichar utf8_get_char(const byte *s) {
@@ -145,6 +146,9 @@ static inline unichar utf8_get_char(const byte *s) {
 }
 static inline const byte *utf8_next_char(const byte *s) {
     return s + 1;
+}
+static mp_uint_t utf8_ptr_to_index(const byte *s, const byte *ptr) {
+    return ptr - s;
 }
 static inline size_t utf8_charlen(const byte *str, size_t len) {
     (void)str;
