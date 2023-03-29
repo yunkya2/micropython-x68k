@@ -83,7 +83,7 @@ STATIC mp_obj_t mp_uos_system(mp_obj_t cmd_in) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_system_obj, mp_uos_system);
 
-#if 0
+#if MICROPY_PY_UOS_URANDOM
 STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
     vstr_t vstr;
