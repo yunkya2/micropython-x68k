@@ -2,7 +2,7 @@
 
 int _re1_5_classmatch(const unichar *pc, const char *sp)
 {
-    unichar ch = utf8_get_char(sp);
+    unichar ch = re_get_char(sp);
     // pc points to "cnt" byte after opcode
     int is_positive = (pc[-1] == Class);
     int cnt = *pc++;
@@ -15,7 +15,7 @@ int _re1_5_classmatch(const unichar *pc, const char *sp)
 
 int _re1_5_namedclassmatch(const unichar *pc, const char *sp)
 {
-    unichar ch = utf8_get_char(sp);
+    unichar ch = re_get_char(sp);
     // pc points to name of class
     int off = (*pc >> 5) & 1;
     if ((*pc | 0x20) == 'd') {

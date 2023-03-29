@@ -117,8 +117,8 @@ STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span
     if (start != NULL) {
         // have a match for this group
         const char *begin = mp_obj_str_get_str(self->str);
-        s = utf8_ptr_to_index(begin, start);
-        e = utf8_ptr_to_index(begin, self->caps[no * 2 + 1]);
+        s = (mp_int_t)utf8_ptr_to_index((const byte *)begin, (const byte *)start);
+        e = (mp_int_t)utf8_ptr_to_index((const byte *)begin, (const byte *)self->caps[no * 2 + 1]);
     }
 
     span[0] = mp_obj_new_int(s);
@@ -349,8 +349,8 @@ STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
                 }
             } else {
                 // Just add the current byte from the replacement string
-                vstr_add_char(&vstr_return, utf8_get_char(repl));
-                repl = utf8_next_char(repl);
+                vstr_add_char(&vstr_return, utf8_get_char((const byte *)repl));
+                repl = (const char *)utf8_next_char((const byte *)repl);
             }
         }
 

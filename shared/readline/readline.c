@@ -110,10 +110,10 @@ typedef struct _readline_t {
 STATIC readline_t rl;
 
 #if MICROPY_PY_BUILTINS_STR_SJIS
-STATIC size_t sjis_cursor_fixup(const byte *line, size_t pos, int offset)
+STATIC size_t sjis_cursor_fixup(const char *line, size_t pos, int offset)
 {
-    int len1 = utf8_charlen(line, pos);
-    int len2 = utf8_charlen(line, pos + offset);
+    int len1 = utf8_charlen((const byte *)line, pos);
+    int len2 = utf8_charlen((const byte *)line, pos + offset);
     return (len1 > 0) && (len1 == len2);
 }
 #endif

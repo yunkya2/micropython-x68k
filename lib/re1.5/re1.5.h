@@ -152,4 +152,7 @@ void cleanmarks(ByteProg *prog);
 int _re1_5_classmatch(const unichar *pc, const char *sp);
 int _re1_5_namedclassmatch(const unichar *pc, const char *sp);
 
+#define re_next_char(p)	(const char *)utf8_next_char((const byte *)(p))
+#define re_get_char(p)	utf8_get_char((const byte *)(p))
+
 #endif /*_RE1_5_REGEXP__H*/

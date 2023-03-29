@@ -7,7 +7,7 @@
 #define INSERT_CODE(at, num, pc) \
     ((code ? memmove(&code[at + num], &code[at], (pc - at) * sizeof(code[0])) : 0), pc += num)
 #define REL(at, to) (to - at - 2)
-#define EMIT(at, byte) (code ? (code[at] = byte) : (at))
+#define EMIT(at, byte) (code ? (void)(code[at] = byte) : (void)(at))
 #define EMIT_CHECKED(at, byte) (_emit_checked(at, code, byte, &err))
 #define PC (prog->bytelen)
 
@@ -26,7 +26,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
     int term = PC;
     int alt_label = 0;
 
-    for (; *re && *re != ')'; re = utf8_next_char(re)) {
+    for (; *re && *re != ')'; re = re_next_char(re)) {
         switch (*re) {
         case '\\':
             re++;
@@ -34,7 +34,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             if ((*re | 0x20) == 'd' || (*re | 0x20) == 's' || (*re | 0x20) == 'w') {
                 term = PC;
                 EMIT(PC++, NamedClass);
-                EMIT(PC++, utf8_get_char(re));
+                EMIT(PC++, re_get_char(re));
                 prog->len++;
                 break;
             }
@@ -42,7 +42,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
         default:
             term = PC;
             EMIT(PC++, Char);
-            EMIT(PC++, utf8_get_char(re));
+            EMIT(PC++, re_get_char(re));
             prog->len++;
             break;
         case '.':
@@ -62,17 +62,17 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             }
             PC++; // Skip # of pair byte
             prog->len++;
-            for (cnt = 0; *re != ']'; re = utf8_next_char(re), cnt++) {
+            for (cnt = 0; *re != ']'; re = re_next_char(re), cnt++) {
                 if (*re == '\\') {
                     ++re;
                 }
                 if (!*re) return NULL;
-                EMIT(PC++, utf8_get_char(re));
-                const char *re2 = utf8_next_char(re);
+                EMIT(PC++, re_get_char(re));
+                const char *re2 = re_next_char(re);
                 if (re2[0] == '-' && re2[1] != ']') {
                     re = &re2[1];
                 }
-                EMIT(PC++, utf8_get_char(re));
+                EMIT(PC++, re_get_char(re));
             }
             EMIT_CHECKED(term + 1, cnt);
             break;

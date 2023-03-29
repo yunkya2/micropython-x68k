@@ -21,25 +21,25 @@ recursiveloop(unichar *pc, const char *sp, Subject *input, const char **subp, in
 		}
 		switch(*pc++) {
 		case Char:
-			ch = utf8_get_char(sp);
+			ch = re_get_char(sp);
 			if(ch != *pc++)
 				return 0;
 			MP_FALLTHROUGH
 		case Any:
-			sp = utf8_next_char(sp);
+			sp = re_next_char(sp);
 			continue;
 		case Class:
 		case ClassNot:
 			if (!_re1_5_classmatch(pc, sp))
 				return 0;
 			pc += *pc * 2 + 1;
-			sp = utf8_next_char(sp);
+			sp = re_next_char(sp);
 			continue;
 		case NamedClass:
 			if (!_re1_5_namedclassmatch(pc, sp))
 				return 0;
 			pc++;
-			sp = utf8_next_char(sp);
+			sp = re_next_char(sp);
 			continue;
 		case Match:
 			return 1;
