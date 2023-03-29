@@ -65,7 +65,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_disp_obj, 1, 2, x68k_spr_dis
 STATIC mp_obj_t x68k_spr_clr(size_t n_args, const mp_obj_t *args) {
     mp_int_t from = 0, to = 255;
     mp_int_t i;
-    mp_int_t res;
+    mp_int_t res = 0;
     if (n_args == 2) {
         from = to = mp_obj_get_int(args[1]);
     } else if (n_args == 3) {
@@ -141,7 +141,7 @@ STATIC mp_obj_t x68k_spr_palet(size_t n_args, const mp_obj_t *args) {
     if (n_args >= 5) {
         vsync = mp_obj_get_int(args[4]);
     }
-    mp_int_t res;
+    mp_int_t res = 0;
     if (mp_obj_is_int(args[2])) {
         mp_int_t c = mp_obj_get_int(args[2]);
         res = _iocs_spalet(p | (vsync ? 0 : 0x80000000), pb, c);

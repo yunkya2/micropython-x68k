@@ -65,7 +65,6 @@ STATIC void os_error(void) {
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
-    ssize_t ret;
     write(STDERR_FILENO, str, len);
     mp_uos_dupterm_tx_strn(str, len);
 }

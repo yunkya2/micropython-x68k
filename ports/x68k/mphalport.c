@@ -48,7 +48,7 @@ int mp_hal_stdin_rx_chr(void) {
 
 // Send string of given length
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-    int r = write(STDOUT_FILENO, str, len);
+    write(STDOUT_FILENO, str, len);
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
@@ -100,13 +100,13 @@ STATIC struct {
     const char *keydef;
 } setfnckey[] =
 {
-    24, "\x04",     /* DEL   -- ^D */
-    25, "\x10",     /* UP    -- ^P */
-    26, "\x02",     /* LEFT  -- ^B */
-    27, "\x06",     /* RIGHT -- ^F */
-    28, "\x0e",     /* DOWN  -- ^N */
-    29, "\x15",     /* CLR   -- ^U */
-    31, "\x01",     /* HOME  -- ^A */
+    { 24, "\x04" },     /* DEL   -- ^D */
+    { 25, "\x10" },     /* UP    -- ^P */
+    { 26, "\x02" },     /* LEFT  -- ^B */
+    { 27, "\x06" },     /* RIGHT -- ^F */
+    { 28, "\x0e" },     /* DOWN  -- ^N */
+    { 29, "\x15" },     /* CLR   -- ^U */
+    { 31, "\x01" },     /* HOME  -- ^A */
 };
 
 STATIC char savefnckey[MP_ARRAY_SIZE(setfnckey)][6];

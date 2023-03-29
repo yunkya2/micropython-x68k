@@ -146,7 +146,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_chdir_obj, vfs_human_chdir);
 
 STATIC mp_obj_t vfs_human_getcwd(mp_obj_t self_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
-    char buf[MICROPY_ALLOC_PATH_MAX + 1];
+//    char buf[MICROPY_ALLOC_PATH_MAX + 1];
 //    const char *ret = getcwd(buf, sizeof(buf));     // TBD 
     const char *ret = NULL;
     if (ret == NULL) {
@@ -279,8 +279,8 @@ STATIC mp_obj_t vfs_human_rmdir(mp_obj_t self_in, mp_obj_t path_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_rmdir_obj, vfs_human_rmdir);
 
 STATIC mp_obj_t vfs_human_stat(mp_obj_t self_in, mp_obj_t path_in) {
-    mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
 #if 0
+    mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     struct stat sb;
     const char *path = vfs_human_get_path_str(self, path_in);
     int ret;

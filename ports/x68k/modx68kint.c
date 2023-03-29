@@ -94,6 +94,7 @@ STATIC void handle_intopm(void) {
 
 STATIC mp_obj_t x68k_intopm_callback(size_t n_args, const mp_obj_t *args) {
     x68k_intopm_t *self = MP_OBJ_TO_PTR(args[0]);
+    (void)(self);
     mp_obj_t callback = mp_const_none;
     if (n_args > 1) {
         callback = args[1];
@@ -133,12 +134,14 @@ STATIC mp_obj_t x68k_intopm_init_helper(x68k_intopm_t *self, size_t n_args, cons
 
 STATIC mp_obj_t x68k_intopm_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     x68k_intopm_t *self = MP_OBJ_TO_PTR(args[0]);
+    (void)(self);
     return x68k_intopm_init_helper(self, n_args - 1, args + 1, kw_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_intopm_init_obj, 1, x68k_intopm_init);
 
 STATIC mp_obj_t x68k_intopm_deinit(mp_obj_t self_in) {
     x68k_intopm_t *self = MP_OBJ_TO_PTR(self_in);
+    (void)(self);
     _iocs_opmintst(0);
     x68k_int_data[INT_OPMINT].callback = mp_const_none;
     return mp_const_none;
@@ -157,6 +160,7 @@ STATIC mp_obj_t x68k_intopm_make_new(const mp_obj_type_t *type, size_t n_args, s
 
 STATIC mp_obj_t x68k_intopm___exit__(size_t n_args, const mp_obj_t *args) {
     x68k_intopm_t *self = MP_OBJ_TO_PTR(args[0]);
+    (void)(self);
     _iocs_opmintst(0);
     x68k_int_data[INT_OPMINT].callback = mp_const_none;
     return mp_const_none;
@@ -244,6 +248,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_inttimerd_init_obj, 1, x68k_inttimerd_ini
 
 STATIC mp_obj_t x68k_inttimerd_deinit(mp_obj_t self_in) {
     x68k_inttimerd_t *self = MP_OBJ_TO_PTR(self_in);
+    (void)(self);
     _iocs_timerdst(0, 0, 0);
     x68k_int_data[INT_TIMERD].callback = mp_const_none;
     return mp_const_none;
@@ -262,6 +267,7 @@ STATIC mp_obj_t x68k_inttimerd_make_new(const mp_obj_type_t *type, size_t n_args
 
 STATIC mp_obj_t x68k_inttimerd___exit__(size_t n_args, const mp_obj_t *args) {
     x68k_inttimerd_t *self = MP_OBJ_TO_PTR(args[0]);
+    (void)(self);
     _iocs_timerdst(0, 0, 0);
     x68k_int_data[INT_TIMERD].callback = mp_const_none;
     return mp_const_none;
@@ -349,6 +355,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_intvsync_init_obj, 1, x68k_intvsync_init)
 
 STATIC mp_obj_t x68k_intvsync_deinit(mp_obj_t self_in) {
     x68k_intvsync_t *self = MP_OBJ_TO_PTR(self_in);
+    (void)(self);
     _iocs_vdispst(0, 0, 0);
     x68k_int_data[INT_VSYNC].callback = mp_const_none;
     return mp_const_none;
@@ -367,6 +374,7 @@ STATIC mp_obj_t x68k_intvsync_make_new(const mp_obj_type_t *type, size_t n_args,
 
 STATIC mp_obj_t x68k_intvsync___exit__(size_t n_args, const mp_obj_t *args) {
     x68k_intvsync_t *self = MP_OBJ_TO_PTR(args[0]);
+    (void)(self);
     _iocs_vdispst(0, 0, 0);
     x68k_int_data[INT_VSYNC].callback = mp_const_none;
     return mp_const_none;
@@ -451,6 +459,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_intraster_init_obj, 1, x68k_intraster_ini
 
 STATIC mp_obj_t x68k_intraster_deinit(mp_obj_t self_in) {
     x68k_intraster_t *self = MP_OBJ_TO_PTR(self_in);
+    (void)(self);
     _iocs_crtcras(0, 0);
     x68k_int_data[INT_CRTCRAS].callback = mp_const_none;
     return mp_const_none;
@@ -469,6 +478,7 @@ STATIC mp_obj_t x68k_intraster_make_new(const mp_obj_type_t *type, size_t n_args
 
 STATIC mp_obj_t x68k_intraster___exit__(size_t n_args, const mp_obj_t *args) {
     x68k_intraster_t *self = MP_OBJ_TO_PTR(args[0]);
+    (void)(self);
     _iocs_crtcras(0, 0);
     x68k_int_data[INT_CRTCRAS].callback = mp_const_none;
     return mp_const_none;

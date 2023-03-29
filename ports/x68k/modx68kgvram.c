@@ -347,7 +347,7 @@ STATIC mp_obj_t x68k_gvram_symbol(size_t n_args, const mp_obj_t *pos_args, mp_ma
     const char *str = mp_obj_str_get_str(args[ARG_str].u_obj);
 
     struct iocs_symbolptr p = { 
-        args[ARG_x].u_int, args[ARG_y].u_int, str,
+        args[ARG_x].u_int, args[ARG_y].u_int, (const unsigned char *)str,
         args[ARG_xmag].u_int, args[ARG_ymag].u_int,
         args[ARG_c].u_int, args[ARG_ftype].u_int, args[ARG_angle].u_int
     };

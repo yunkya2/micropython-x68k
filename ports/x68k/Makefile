@@ -16,6 +16,7 @@ INC += -I$(BUILD)
 
 LD = $(CC)
 CFLAGS += $(INC) -Os
+CFLAGS += -Wall -Werror
 LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 #CFLAGS += -DNDEBUG
 

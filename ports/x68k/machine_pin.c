@@ -72,6 +72,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // configure mode
     if (args[0].u_obj != mp_const_none) {
         mp_int_t mode = mp_obj_get_int(args[0].u_obj);
+        (void)(mode);
     }
 
     return mp_const_none;
