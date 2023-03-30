@@ -34,57 +34,14 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <ctype.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <x68k/dos.h>
 
-static const char errmap[] = {
-  0,          /*   0: */
-  ENOENT,     /*  -1: Illegal function code */
-  ENOENT,     /*  -2: File not found */
-  ENOENT,     /*  -3: Directory not found */
-  EMFILE,     /*  -4: Too many open files */
-  EISDIR,     /*  -5: Cannot access directory or volume label */
-  EBADF,      /*  -6: Bad file descriptor */
-  EFAULT,     /*  -7: Broken memory management area */
-  ENOMEM,     /*  -8: No memory */
-  EFAULT,     /*  -9: Illegal memory management pointer */
-  EFAULT,     /* -10: Illegal environment */
-  ENOEXEC,    /* -11: Illegal execute file format */
-  EINVAL,     /* -12: Illegal access mode */
-  ENOENT,     /* -13: Illegal file name */
-  EINVAL,     /* -14: Illegal parameter */
-  EXDEV,      /* -15: Illegal drive name */
-  ENOTEMPTY,  /* -16: Cannot remove current directory */
-  EPERM,      /* -17: Not supported ioctl */
-  ENOENT,     /* -18: No directory entry */
-  EACCES,     /* -19: Read only file */
-  EEXIST,     /* -20: Directory already exists */
-  ENOTEMPTY,  /* -21: Directory is not emptry */
-  EPERM,      /* -22: Cannot rename the file */
-  ENOSPC,     /* -23: Disk full */
-  ENOSPC,     /* -24: Directory full */
-  ESPIPE,     /* -25: Cannot seek */
-  EPERM,      /* -26: Already in the supervisor state */
-  ETXTBSY,    /* -27: Duplicate thread name */
-  EIO,        /* -28: Cannot send */
-  EPERM,      /* -29: Thread full */
-  ENOSYS,     /* -30: */
-  ENOSYS,     /* -31: */
-  ENFILE,     /* -32: Lock region full */
-  ENOLCK,     /* -33: File is locked */
-  EACCES,     /* -34: Drive busy */
-  ELOOP,      /* -35: Symbolic link loop */
-};
-
-int __doserr2errno(int error)
-{
-  if ((error >= 0) && (error <= sizeof(errmap)))
-    return errmap[error];
-
-  return EINVAL;
-}
+/* libx68k internal function to convert errno */
+int __doserr2errno(int error);
 
 typedef struct _mp_obj_vfs_human_t {
     mp_obj_base_t base;
@@ -117,7 +74,7 @@ STATIC mp_obj_t vfs_human_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     int ret = f(vfs_human_get_path_str(self, path_in));
     if (ret < 0) {
-        mp_raise_OSError(__doserr2errno(-ret));
+        mp_raise_OSError(errno);
     }
     return mp_const_none;
 }
@@ -188,21 +145,7 @@ STATIC mp_obj_t vfs_human_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_human_open_obj, vfs_human_open);
 
 STATIC mp_obj_t vfs_human_chdir(mp_obj_t self_in, mp_obj_t path_in) {
-    mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
-    const char *path = vfs_human_get_path_str(self, path_in);
-    char drv = toupper(path[0]);
-    int ret;
-    if (drv >= 'A' && drv <= 'Z' && path[1] == ':') {
-        ret = _dos_chgdrv(drv - 'A');
-        if (ret < 0) {
-            mp_raise_OSError(__doserr2errno(-ret));
-        }
-    }
-    ret = _dos_chdir(path);
-    if (ret < 0) {
-        mp_raise_OSError(__doserr2errno(-ret));
-    }
-    return mp_const_none;
+    return vfs_human_fun1_helper(self_in, path_in, chdir);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_chdir_obj, vfs_human_chdir);
 
@@ -321,17 +264,17 @@ STATIC mp_obj_t vfs_human_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     const char *path = vfs_human_get_path_str(self, path_in);
     MP_THREAD_GIL_EXIT();
-    int ret = _dos_mkdir(path);
+    int ret = mkdir(path, 0777);
     MP_THREAD_GIL_ENTER();
     if (ret < 0) {
-        mp_raise_OSError(__doserr2errno(-ret));
+        mp_raise_OSError(errno);
     }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_mkdir_obj, vfs_human_mkdir);
 
 STATIC mp_obj_t vfs_human_remove(mp_obj_t self_in, mp_obj_t path_in) {
-    return vfs_human_fun1_helper(self_in, path_in, _dos_delete);
+    return vfs_human_fun1_helper(self_in, path_in, unlink);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_remove_obj, vfs_human_remove);
 
@@ -350,7 +293,7 @@ STATIC mp_obj_t vfs_human_rename(mp_obj_t self_in, mp_obj_t old_path_in, mp_obj_
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_human_rename_obj, vfs_human_rename);
 
 STATIC mp_obj_t vfs_human_rmdir(mp_obj_t self_in, mp_obj_t path_in) {
-    return vfs_human_fun1_helper(self_in, path_in, _dos_rmdir);
+    return vfs_human_fun1_helper(self_in, path_in, rmdir);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_rmdir_obj, vfs_human_rmdir);
 
@@ -401,43 +344,31 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_stat_obj, vfs_human_stat);
 
 #if MICROPY_PY_UOS_STATVFS
 
-#ifdef __ANDROID__
-#define USE_STATFS 1
-#endif
-
-#if USE_STATFS
-#include <sys/vfs.h>
-#define STRUCT_STATVFS struct statfs
-#define STATVFS statfs
-#define F_FAVAIL sb.f_ffree
-#define F_NAMEMAX sb.f_namelen
-#define F_FLAG sb.f_flags
-#else
-#include <sys/statvfs.h>
-#define STRUCT_STATVFS struct statvfs
-#define STATVFS statvfs
-#define F_FAVAIL sb.f_favail
-#define F_NAMEMAX sb.f_namemax
-#define F_FLAG sb.f_flag
-#endif
-
 STATIC mp_obj_t vfs_human_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
-    STRUCT_STATVFS sb;
+    struct dos_freeinf sb;
     const char *path = vfs_human_get_path_str(self, path_in);
-    int ret;
-    MP_HAL_RETRY_SYSCALL(ret, STATVFS(path, &sb), mp_raise_OSError(err));
+    int drv = toupper(path[0]);
+    if (drv >= 'A' && drv <= 'Z' && path[1] == ':') {
+        drv -= 'A' - 1;
+    } else {
+        drv = _dos_curdrv() + 1;
+    }
+    int ret = _dos_dskfre(drv, &sb);
+    if (ret < 0) {
+        mp_raise_OSError(__doserr2errno(-ret));
+    }
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
-    t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.f_bsize);
-    t->items[1] = MP_OBJ_NEW_SMALL_INT(sb.f_frsize);
-    t->items[2] = MP_OBJ_NEW_SMALL_INT(sb.f_blocks);
-    t->items[3] = MP_OBJ_NEW_SMALL_INT(sb.f_bfree);
-    t->items[4] = MP_OBJ_NEW_SMALL_INT(sb.f_bavail);
-    t->items[5] = MP_OBJ_NEW_SMALL_INT(sb.f_files);
-    t->items[6] = MP_OBJ_NEW_SMALL_INT(sb.f_ffree);
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(F_FAVAIL);
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(F_FLAG);
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(F_NAMEMAX);
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.sec * sb.byte);   /* f_bsize */
+    t->items[1] = MP_OBJ_NEW_SMALL_INT(sb.byte);            /* f_frsize */
+    t->items[2] = MP_OBJ_NEW_SMALL_INT(sb.max * sb.sec);    /* f_blocks */
+    t->items[3] = MP_OBJ_NEW_SMALL_INT(sb.free * sb.sec);   /* f_bfree */
+    t->items[4] = MP_OBJ_NEW_SMALL_INT(sb.free * sb.sec);   /* f_bavail */
+    t->items[5] = MP_OBJ_NEW_SMALL_INT(0);                  /* f_files */
+    t->items[6] = MP_OBJ_NEW_SMALL_INT(0);                  /* f_ffree */
+    t->items[7] = MP_OBJ_NEW_SMALL_INT(0);                  /* f_favail */
+    t->items[8] = MP_OBJ_NEW_SMALL_INT(0);                  /* f_flag */
+    t->items[9] = MP_OBJ_NEW_SMALL_INT(21);                 /* f_namemax */
     return MP_OBJ_FROM_PTR(t);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_statvfs_obj, vfs_human_statvfs);

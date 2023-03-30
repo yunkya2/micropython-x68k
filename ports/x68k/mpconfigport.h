@@ -89,7 +89,7 @@
 #define MICROPY_PY_UOS_UNAME                    (1)
 #define MICROPY_PY_UOS_URANDOM                  (0)
 #define MICROPY_PY_UOS_ERRNO                    (1)
-#define MICROPY_PY_UOS_STATVFS                  (0)
+#define MICROPY_PY_UOS_STATVFS                  (1)
 
 #define MICROPY_PY_UJSON                        (1)
 #define MICROPY_PY_USELECT                      (0)
