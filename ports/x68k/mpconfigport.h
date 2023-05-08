@@ -109,12 +109,9 @@
 #define MICROPY_REPL_EMACS_WORDS_MOVE           (1)
 #define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE     (1)
 #define MICROPY_USE_READLINE_HISTORY            (1)
-#ifndef MICROPY_READLINE_HISTORY_SIZE
-#define MICROPY_READLINE_HISTORY_SIZE           (50)
-#endif
 
 #define MICROPY_PORT_ROOT_POINTERS                                        \
-    const char *readline_hist[8];                                         \
+    const char *readline_hist[50];                                        \
 
 #define MP_STATE_PORT MP_STATE_VM
 

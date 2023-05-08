@@ -46,6 +46,7 @@
 #include "extmod/vfs.h"
 #include "vfs_human.h"
 #include "mphalport.h"
+#include "input.h"
 
 // Command line options, with their defaults
 STATIC uint emit_opt = MP_EMIT_OPT_NONE;
@@ -375,13 +376,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
         inspect = true;
     }
     if (ret == NOTHING_EXECUTED || inspect) {
-        // prompt_read_history();
+        prompt_read_history();
         mp_hal_setfnckey();
         do {
             ret = pyexec_friendly_repl();
         } while (ret == 0);
         mp_hal_restorefnckey();
-        // prompt_write_history();
+        prompt_write_history();
     }
 
     #if MICROPY_PY_SYS_SETTRACE
