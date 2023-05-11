@@ -85,7 +85,17 @@ bool mp_repl_continue_with_input(const char *input) {
     int n_brace = 0;
     int in_quote = Q_NONE;
     const char *i;
+    #if MICROPY_PY_BUILTINS_STR_SJIS
+    const char *i_prev = NULL;
+    #endif
     for (i = input; *i; i++) {
+    #if MICROPY_PY_BUILTINS_STR_SJIS
+        if (SJIS_IS_NONASCII(*i)) {
+            i_prev = i;
+            i++;
+            continue;
+        }
+    #endif
         if (*i == '\'') {
             if ((in_quote == Q_NONE || in_quote == Q_3_SINGLE) && i[1] == '\'' && i[2] == '\'') {
                 i += 2;
@@ -141,9 +151,15 @@ bool mp_repl_continue_with_input(const char *input) {
     }
 
     // continue if last character was backslash (for line continuation)
+    #if MICROPY_PY_BUILTINS_STR_SJIS
+    if ((i_prev != &i[-2]) && (i[-1] == '\\')) {
+        return true;
+    }
+    #else
     if (i[-1] == '\\') {
         return true;
     }
+    #endif
 
     // continue if compound keyword and last line was not empty
     if (starts_with_compound_keyword && i[-1] != '\n') {

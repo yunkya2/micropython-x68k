@@ -970,6 +970,15 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             #endif
         }
         if (*str != '{') {
+            #if MICROPY_PY_BUILTINS_STR_SJIS
+            if (SJIS_IS_NONASCII(*str)) {
+                vstr_add_byte(&vstr, *str);
+                str++;
+                if (str >= top) {
+                    break;
+                }
+            }
+            #endif
             vstr_add_byte(&vstr, *str);
             continue;
         }

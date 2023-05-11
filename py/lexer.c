@@ -378,6 +378,16 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                         } else if (c == ']' || c == '}') {
                             nested_bracket_level -= 1;
                         }
+                        #if MICROPY_PY_BUILTINS_STR_SJIS
+                        if (SJIS_IS_NONASCII(c)) {
+                            vstr_add_byte(&lex->fstring_args, c);
+                            next_char(lex);
+                            if (is_end(lex)) {
+                                break;
+                            }
+                            c = CUR_CHAR(lex);
+                        }
+                        #endif
                         // like the default case at the end of this function, stay 8-bit clean
                         vstr_add_byte(&lex->fstring_args, c);
                         next_char(lex);
@@ -694,6 +704,18 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
     } else if (is_head_of_identifier(lex)) {
         lex->tok_kind = MP_TOKEN_NAME;
 
+        #if MICROPY_PY_BUILTINS_STR_SJIS
+        do {
+            vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
+            if (SJIS_IS_NONASCII(CUR_CHAR(lex))) {
+                next_char(lex);
+                if (!is_end(lex)) {
+                    vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
+                }
+            }
+            next_char(lex);
+        } while (!is_end(lex) && is_tail_of_identifier(lex));
+        #else
         // get first char (add as byte to remain 8-bit clean and support utf-8)
         vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
         next_char(lex);
@@ -703,6 +725,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             vstr_add_byte(&lex->vstr, CUR_CHAR(lex));
             next_char(lex);
         }
+        #endif
 
         // Check if the name is a keyword.
         // We also check for __debug__ here and convert it to its value.  This is
