@@ -77,8 +77,6 @@ mp_obj_t mp_vfs_human_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
             case '+':
                 mode_rw = O_RDWR;
                 break;
-                #if MICROPY_PY_IO_FILEIO
-            // If we don't have io.FileIO, then files are in text mode implicitly
             case 'b':
                 type = &mp_type_vfs_human_fileio;
                 mode_bt = O_BINARY;
@@ -87,7 +85,6 @@ mp_obj_t mp_vfs_human_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
                 type = &mp_type_vfs_human_textio;
                 mode_bt = O_TEXT;
                 break;
-                #endif
         }
     }
 
@@ -108,17 +105,6 @@ mp_obj_t mp_vfs_human_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
     }
     o->fd = fd;
     return MP_OBJ_FROM_PTR(o);
-}
-
-STATIC mp_obj_t vfs_human_file_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_r)} },
-    };
-
-    mp_arg_val_t arg_vals[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
-    return mp_vfs_human_file_open(type, arg_vals[0].u_obj, arg_vals[1].u_obj);
 }
 
 STATIC mp_obj_t vfs_human_file_fileno(mp_obj_t self_in) {
@@ -260,24 +246,20 @@ STATIC const mp_rom_map_elem_t vfs_human_rawfile_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(vfs_human_rawfile_locals_dict, vfs_human_rawfile_locals_dict_table);
 
-#if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t vfs_human_fileio_stream_p = {
     .read = vfs_human_file_read,
     .write = vfs_human_file_write,
     .ioctl = vfs_human_file_ioctl,
 };
 
-const mp_obj_type_t mp_type_vfs_human_fileio = {
-    { &mp_type_type },
-    .name = MP_QSTR_FileIO,
-    .print = vfs_human_file_print,
-    .make_new = vfs_human_file_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_human_fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_human_rawfile_locals_dict,
-};
-#endif
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_human_fileio,
+    MP_QSTR_FileIO,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, vfs_human_file_print,
+    protocol, &vfs_human_fileio_stream_p,
+    locals_dict, &vfs_human_rawfile_locals_dict
+    );
 
 STATIC const mp_stream_p_t vfs_human_textio_stream_p = {
     .read = vfs_human_file_read,
@@ -286,17 +268,15 @@ STATIC const mp_stream_p_t vfs_human_textio_stream_p = {
     .is_text = true,
 };
 
-const mp_obj_type_t mp_type_vfs_human_textio = {
-    { &mp_type_type },
-    .name = MP_QSTR_TextIOWrapper,
-    .print = vfs_human_file_print,
-    .make_new = vfs_human_file_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_human_textio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&vfs_human_rawfile_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_human_textio,
+    MP_QSTR_TextIOWrapper,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, vfs_human_file_print,
+    protocol, &vfs_human_textio_stream_p,
+    locals_dict, &vfs_human_rawfile_locals_dict
+    );
 
-const mp_obj_vfs_human_file_t mp_sys_stdin_obj = {{&mp_type_textio}, STDIN_FILENO};
-const mp_obj_vfs_human_file_t mp_sys_stdout_obj = {{&mp_type_textio}, STDOUT_FILENO};
-const mp_obj_vfs_human_file_t mp_sys_stderr_obj = {{&mp_type_textio}, STDERR_FILENO};
+const mp_obj_vfs_human_file_t mp_sys_stdin_obj = {{&mp_type_vfs_human_textio}, STDIN_FILENO};
+const mp_obj_vfs_human_file_t mp_sys_stdout_obj = {{&mp_type_vfs_human_textio}, STDOUT_FILENO};
+const mp_obj_vfs_human_file_t mp_sys_stderr_obj = {{&mp_type_vfs_human_textio}, STDERR_FILENO};

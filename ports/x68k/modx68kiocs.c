@@ -332,8 +332,9 @@ STATIC const mp_rom_map_elem_t x68k_i_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(x68k_i_locals_dict, x68k_i_locals_dict_table);
 
-const mp_obj_type_t x68k_i_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_i,
-    .locals_dict = (mp_obj_dict_t *)&x68k_i_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    x68k_i_obj_type,
+    MP_QSTR_i,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &x68k_i_locals_dict
+    );

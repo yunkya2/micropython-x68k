@@ -504,12 +504,13 @@ STATIC const mp_rom_map_elem_t x68k_gvram_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(x68k_gvram_locals_dict, x68k_gvram_locals_dict_table);
 
-const mp_obj_type_t x68k_type_gvram = {
-    { &mp_type_type },
-    .name = MP_QSTR_GVRam,
-    .make_new = x68k_gvram_make_new,
-    .unary_op = x68k_gvram_unary_op,
-    .subscr = x68k_gvram_subscr,
-    .buffer_p = { .get_buffer = x68k_gvram_get_buffer },
-    .locals_dict = (mp_obj_dict_t *)&x68k_gvram_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    x68k_type_gvram,
+    MP_QSTR_GVRam,
+    MP_TYPE_FLAG_NONE,
+    make_new, x68k_gvram_make_new,
+    unary_op, x68k_gvram_unary_op,
+    subscr, x68k_gvram_subscr,
+    buffer, x68k_gvram_get_buffer,
+    locals_dict, &x68k_gvram_locals_dict
+    );

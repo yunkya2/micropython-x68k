@@ -177,12 +177,13 @@ STATIC const mp_rom_map_elem_t x68k_intopm_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(x68k_intopm_locals_dict, x68k_intopm_locals_dict_table);
 
-const mp_obj_type_t x68k_type_intopm = {
-    { &mp_type_type },
-    .name = MP_QSTR_IntOpm,
-    .make_new = x68k_intopm_make_new,
-    .locals_dict = (mp_obj_dict_t *)&x68k_intopm_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    x68k_type_intopm,
+    MP_QSTR_IntOpm,
+    MP_TYPE_FLAG_NONE,
+    make_new, x68k_intopm_make_new,
+    locals_dict, &x68k_intopm_locals_dict
+    );
 
 /****************************************************************************/
 
@@ -284,12 +285,13 @@ STATIC const mp_rom_map_elem_t x68k_inttimerd_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(x68k_inttimerd_locals_dict, x68k_inttimerd_locals_dict_table);
 
-const mp_obj_type_t x68k_type_inttimerd = {
-    { &mp_type_type },
-    .name = MP_QSTR_IntTimerD,
-    .make_new = x68k_inttimerd_make_new,
-    .locals_dict = (mp_obj_dict_t *)&x68k_inttimerd_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    x68k_type_inttimerd,
+    MP_QSTR_IntTimerD,
+    MP_TYPE_FLAG_NONE,
+    make_new, x68k_inttimerd_make_new,
+    locals_dict, &x68k_inttimerd_locals_dict
+    );
 
 /****************************************************************************/
 
@@ -391,12 +393,13 @@ STATIC const mp_rom_map_elem_t x68k_intvsync_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(x68k_intvsync_locals_dict, x68k_intvsync_locals_dict_table);
 
-const mp_obj_type_t x68k_type_intvsync = {
-    { &mp_type_type },
-    .name = MP_QSTR_IntVSync,
-    .make_new = x68k_intvsync_make_new,
-    .locals_dict = (mp_obj_dict_t *)&x68k_intvsync_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    x68k_type_intvsync,
+    MP_QSTR_IntVSync,
+    MP_TYPE_FLAG_NONE,
+    make_new, x68k_intvsync_make_new,
+    locals_dict, &x68k_intvsync_locals_dict
+    );
 
 /****************************************************************************/
 
@@ -494,12 +497,13 @@ STATIC const mp_rom_map_elem_t x68k_intraster_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(x68k_intraster_locals_dict, x68k_intraster_locals_dict_table);
 
-const mp_obj_type_t x68k_type_intraster = {
-    { &mp_type_type },
-    .name = MP_QSTR_IntRaster,
-    .make_new = x68k_intraster_make_new,
-    .locals_dict = (mp_obj_dict_t *)&x68k_intraster_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    x68k_type_intraster,
+    MP_QSTR_IntRaster,
+    MP_TYPE_FLAG_NONE,
+    make_new, x68k_intraster_make_new,
+    locals_dict, &x68k_intraster_locals_dict
+    );
 
 /****************************************************************************/
 
@@ -535,12 +539,13 @@ STATIC const mp_rom_map_elem_t x68k_intdisable_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(x68k_intdisable_locals_dict, x68k_intdisable_locals_dict_table);
 
-const mp_obj_type_t x68k_type_intdisable = {
-    { &mp_type_type },
-    .name = MP_QSTR_IntDisable,
-    .make_new = x68k_intdisable_make_new,
-    .locals_dict = (mp_obj_dict_t *)&x68k_intdisable_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    x68k_type_intdisable,
+    MP_QSTR_IntDisable,
+    MP_TYPE_FLAG_NONE,
+    make_new, x68k_intdisable_make_new,
+    locals_dict, &x68k_intdisable_locals_dict
+    );
 
 STATIC mp_obj_t x68k_intdisable(void) {
     uint16_t oldsr;

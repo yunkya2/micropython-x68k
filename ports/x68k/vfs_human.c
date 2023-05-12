@@ -398,10 +398,11 @@ STATIC const mp_vfs_proto_t vfs_human_proto = {
     .import_stat = mp_vfs_human_import_stat,
 };
 
-const mp_obj_type_t mp_type_vfs_human = {
-    { &mp_type_type },
-    .name = MP_QSTR_Vfshuman,
-    .make_new = vfs_human_make_new,
-    .protocol = &vfs_human_proto,
-    .locals_dict = (mp_obj_dict_t *)&vfs_human_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_human,
+    MP_QSTR_Vfshuman,
+    MP_TYPE_FLAG_NONE,
+    make_new, vfs_human_make_new,
+    protocol, &vfs_human_proto,
+    locals_dict, &vfs_human_locals_dict
+    );

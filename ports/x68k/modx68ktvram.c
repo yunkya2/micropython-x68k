@@ -380,12 +380,13 @@ STATIC const mp_rom_map_elem_t x68k_tvram_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(x68k_tvram_locals_dict, x68k_tvram_locals_dict_table);
 
-const mp_obj_type_t x68k_type_tvram = {
-    { &mp_type_type },
-    .name = MP_QSTR_TVRam,
-    .make_new = x68k_tvram_make_new,
-    .unary_op = x68k_tvram_unary_op,
-    .subscr = x68k_tvram_subscr,
-    .buffer_p = { .get_buffer = x68k_tvram_get_buffer },
-    .locals_dict = (mp_obj_dict_t *)&x68k_tvram_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    x68k_type_tvram,
+    MP_QSTR_TVRam,
+    MP_TYPE_FLAG_NONE,
+    make_new, x68k_tvram_make_new,
+    unary_op, x68k_tvram_unary_op,
+    subscr, x68k_tvram_subscr,
+    buffer, x68k_tvram_get_buffer,
+    locals_dict, &x68k_tvram_locals_dict
+    );
