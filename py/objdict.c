@@ -90,6 +90,12 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     size_t cur = 0;
     mp_map_elem_t *next = NULL;
     while ((next = dict_iter_next(self, &cur)) != NULL) {
+        #if MICROPY_MODULE_ATTR_DELEGATION
+        // MP_MODULE_ATTR_DELEGATION_ENTRY entries have MP_QSTRnull as qstr key.
+        if (next->key == MP_ROM_QSTR(MP_QSTRnull)) {
+            continue;
+        }
+        #endif
         if (!first) {
             mp_print_str(print, item_separator);
         }
