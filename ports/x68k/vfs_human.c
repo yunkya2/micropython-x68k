@@ -32,12 +32,16 @@
 #include "extmod/vfs.h"
 #include "vfs_human.h"
 
+#if !MICROPY_ENABLE_FINALISER
+#error "MICROPY_VFS_POSIX requires MICROPY_ENABLE_FINALISER"
+#endif
+
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <ctype.h>
-#include <sys/stat.h>
-#include <errno.h>
 #include <x68k/dos.h>
 
 /* libx68k internal function to convert errno */
@@ -140,7 +144,7 @@ STATIC mp_obj_t vfs_human_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
     if (!mp_obj_is_small_int(path_in)) {
         path_in = vfs_human_get_path_obj(self, path_in);
     }
-    return mp_vfs_human_file_open(&mp_type_textio, path_in, mode_in);
+    return mp_vfs_human_file_open(&mp_type_vfs_human_textio, path_in, mode_in);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_human_open_obj, vfs_human_open);
 
@@ -178,6 +182,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(vfs_human_getcwd_obj, vfs_human_getcwd);
 typedef struct _vfs_human_ilistdir_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
+    mp_fun_1_t finaliser;
     bool is_str;
     bool active;
     struct dos_filbuf fb;
@@ -230,10 +235,18 @@ STATIC mp_obj_t vfs_human_ilistdir_it_iternext(mp_obj_t self_in) {
     }
 }
 
+STATIC mp_obj_t vfs_human_ilistdir_it_del(mp_obj_t self_in) {
+    vfs_human_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
+    self->active = false;
+    return mp_const_none;
+}
+
 STATIC mp_obj_t vfs_human_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
-    vfs_human_ilistdir_it_t *iter = mp_obj_malloc(vfs_human_ilistdir_it_t, &mp_type_polymorph_iter);
+    vfs_human_ilistdir_it_t *iter = m_new_obj_with_finaliser(vfs_human_ilistdir_it_t);
+    iter->base.type = &mp_type_polymorph_iter_with_finaliser;
     iter->iternext = vfs_human_ilistdir_it_iternext;
+    iter->finaliser = vfs_human_ilistdir_it_del;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
     const char *path = vfs_human_get_path_str(self, path_in);
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
@@ -400,7 +413,7 @@ STATIC const mp_vfs_proto_t vfs_human_proto = {
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_vfs_human,
-    MP_QSTR_Vfshuman,
+    MP_QSTR_VfsHuman,
     MP_TYPE_FLAG_NONE,
     make_new, vfs_human_make_new,
     protocol, &vfs_human_proto,
