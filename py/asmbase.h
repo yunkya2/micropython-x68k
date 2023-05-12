@@ -33,17 +33,13 @@
 #define MP_ASM_PASS_EMIT    (2)
 
 typedef struct _mp_asm_base_t {
-<<<<<<< HEAD
-    int pass;
-    bool endian;
-=======
     uint8_t pass;
+    bool endian;
 
     // Set to true using mp_asm_base_suppress_code() if the code generator
     // should suppress emitted code due to it being dead code.
     bool suppress;
 
->>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
     size_t code_offset;
     size_t code_size;
     uint8_t *code_base;

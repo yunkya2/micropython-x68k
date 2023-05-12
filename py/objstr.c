@@ -206,15 +206,7 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
             } else {
                 mp_buffer_info_t bufinfo;
                 mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
-<<<<<<< HEAD
-                #if MICROPY_PY_BUILTINS_STR_UNICODE_CHECK || MICROPY_PY_BUILTINS_STR_SJIS_CHECK
-                if (!utf8_check(bufinfo.buf, bufinfo.len)) {
-                    mp_raise_msg(&mp_type_UnicodeError, NULL);
-                }
-                #endif
-=======
                 // This will utf-8 check the input.
->>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
                 return mp_obj_new_str(bufinfo.buf, bufinfo.len);
             }
     }
@@ -2085,17 +2077,6 @@ STATIC const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
     #endif
     #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&bytes_decode_obj) },
-<<<<<<< HEAD
-    #if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
-    // If we have separate unicode type, then here we have methods only
-    // for bytes type, and it should not have encode() methods. Otherwise,
-    // we have non-compliant-but-practical bytestring type, which shares
-    // method table with bytes, so they both have encode() and decode()
-    // methods (which should do type checking at runtime).
-    { MP_ROM_QSTR(MP_QSTR_encode), MP_ROM_PTR(&str_encode_obj) },
-    #endif
-=======
->>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
     #endif
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&str_find_obj) },
     { MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&str_rfind_obj) },
@@ -2142,16 +2123,11 @@ STATIC const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
 #define TABLE_ENTRIES_COMPAT 0
 #endif
 
-<<<<<<< HEAD
-#if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
-=======
 #if MICROPY_PY_BUILTINS_BYTES_HEX
 #define TABLE_ENTRIES_HEX 2
 #else
 #define TABLE_ENTRIES_HEX 0
 #endif
->>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
 
 #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY
 #define TABLE_ENTRIES_ARRAY 2
@@ -2189,7 +2165,7 @@ MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_memoryview_locals_dict,
     1); // Just the "hex" entry.
 #endif
 
-#if !MICROPY_PY_BUILTINS_STR_UNICODE
+#if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
 MP_DEFINE_CONST_OBJ_TYPE(

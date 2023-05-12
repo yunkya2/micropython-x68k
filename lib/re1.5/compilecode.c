@@ -65,38 +65,24 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             }
             PC++; // Skip # of pair byte
             prog->len++;
-<<<<<<< HEAD
             for (cnt = 0; *re != ']'; re = re_next_char(re), cnt++) {
-                if (*re == '\\') {
-=======
-            for (cnt = 0; *re != ']'; re++, cnt++) {
-                char c = *re;
+                unichar c = re_get_char(re);
                 if (c == '\\') {
->>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
-                    ++re;
-                    c = *re;
+                    re = re_next_char(re);
+                    c = re_get_char(re);
                     if (MATCH_NAMED_CLASS_CHAR(c)) {
                         c = RE15_CLASS_NAMED_CLASS_INDICATOR;
                         goto emit_char_pair;
                     }
                 }
-<<<<<<< HEAD
-                if (!*re) return NULL;
-                EMIT(PC++, re_get_char(re));
+                if (!c) return NULL;
                 const char *re2 = re_next_char(re);
                 if (re2[0] == '-' && re2[1] != ']') {
                     re = &re2[1];
                 }
-                EMIT(PC++, re_get_char(re));
-=======
-                if (!c) return NULL;
-                if (re[1] == '-' && re[2] != ']') {
-                    re += 2;
-                }
             emit_char_pair:
                 EMIT(PC++, c);
-                EMIT(PC++, *re);
->>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
+                EMIT(PC++, re_get_char(re));
             }
             EMIT_CHECKED(term + 1, cnt);
             break;

@@ -2397,17 +2397,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         } else if (op == MP_BINARY_OP_MULTIPLY) {
             ASM_MUL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
-<<<<<<< HEAD
 #endif
-        } else if (MP_BINARY_OP_LESS <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
-            // comparison ops are (in enum order):
-            //  MP_BINARY_OP_LESS
-            //  MP_BINARY_OP_MORE
-            //  MP_BINARY_OP_EQUAL
-            //  MP_BINARY_OP_LESS_EQUAL
-            //  MP_BINARY_OP_MORE_EQUAL
-            //  MP_BINARY_OP_NOT_EQUAL
-=======
         } else if (op == MP_BINARY_OP_LESS
                    || op == MP_BINARY_OP_MORE
                    || op == MP_BINARY_OP_EQUAL
@@ -2415,7 +2405,6 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                    || op == MP_BINARY_OP_MORE_EQUAL
                    || op == MP_BINARY_OP_NOT_EQUAL) {
             // comparison ops
->>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
 
             if (vtype_lhs != vtype_rhs) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit, MP_ERROR_TEXT("comparison of int and uint"));
