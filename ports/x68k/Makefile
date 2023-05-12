@@ -3,6 +3,7 @@ include ../../py/mkenv.mk
 CROSS ?= 1
 
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 ifeq ($(CROSS), 1)
 CROSS_COMPILE ?= m68k-xelf-
