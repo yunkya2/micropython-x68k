@@ -211,7 +211,7 @@ STATIC mp_obj_t x68k_spr_bgscroll(size_t n_args, const mp_obj_t *args) {
     mp_int_t x = mp_obj_get_int(args[2]);
     mp_int_t y = mp_obj_get_int(args[3]);
     bool vsync = true;
-    if (n_args == 7) {
+    if (n_args > 4) {
         vsync = mp_obj_get_int(args[4]);
     }
 
