@@ -2180,7 +2180,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     buffer, mp_obj_str_get_buffer,
     locals_dict, &mp_obj_str_locals_dict
     );
-#endif // !MICROPY_PY_BUILTINS_STR_UNICODE
+#endif // !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
 
 // Reuses most methods from str
 MP_DEFINE_CONST_OBJ_TYPE(
@@ -2271,27 +2271,27 @@ STATIC mp_obj_t mp_obj_new_str_type_from_vstr(const mp_obj_type_t *type, vstr_t 
 }
 
 mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr) {
-    #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+    #if (MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK) || (MICROPY_PY_BUILTINS_STR_SJIS && MICROPY_PY_BUILTINS_STR_SJIS_CHECK)
     if (!utf8_check((byte *)vstr->buf, vstr->len)) {
         mp_raise_msg(&mp_type_UnicodeError, NULL);
     }
-    #endif // MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+    #endif // (MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK) || (MICROPY_PY_BUILTINS_STR_SJIS && MICROPY_PY_BUILTINS_STR_SJIS_CHECK)
     return mp_obj_new_str_type_from_vstr(&mp_type_str, vstr);
 }
 
-#if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+#if (MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK) || (MICROPY_PY_BUILTINS_STR_SJIS && MICROPY_PY_BUILTINS_STR_SJIS_CHECK)
 mp_obj_t mp_obj_new_str_from_utf8_vstr(vstr_t *vstr) {
     // bypasses utf8_check.
     return mp_obj_new_str_type_from_vstr(&mp_type_str, vstr);
 }
-#endif // MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+#endif // (MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK) || (MICROPY_PY_BUILTINS_STR_SJIS && MICROPY_PY_BUILTINS_STR_SJIS_CHECK)
 
 mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr) {
     return mp_obj_new_str_type_from_vstr(&mp_type_bytes, vstr);
 }
 
 mp_obj_t mp_obj_new_str(const char *data, size_t len) {
-    #if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+    #if (MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK) || (MICROPY_PY_BUILTINS_STR_SJIS && MICROPY_PY_BUILTINS_STR_SJIS_CHECK)
     if (!utf8_check((byte *)data, len)) {
         mp_raise_msg(&mp_type_UnicodeError, NULL);
     }

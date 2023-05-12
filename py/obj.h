@@ -944,7 +944,7 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val); // this must return a 
 mp_obj_t mp_obj_new_str(const char *data, size_t len); // will check utf-8 (raises UnicodeError)
 mp_obj_t mp_obj_new_str_via_qstr(const char *data, size_t len); // input data must be valid utf-8
 mp_obj_t mp_obj_new_str_from_vstr(vstr_t *vstr); // will check utf-8 (raises UnicodeError)
-#if MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK
+#if (MICROPY_PY_BUILTINS_STR_UNICODE && MICROPY_PY_BUILTINS_STR_UNICODE_CHECK) || (MICROPY_PY_BUILTINS_STR_SJIS && MICROPY_PY_BUILTINS_STR_SJIS_CHECK)
 mp_obj_t mp_obj_new_str_from_utf8_vstr(vstr_t *vstr); // input data must be valid utf-8
 #else
 #define mp_obj_new_str_from_utf8_vstr mp_obj_new_str_from_vstr

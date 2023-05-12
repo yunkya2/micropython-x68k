@@ -33,7 +33,7 @@
 #include "py/objstr.h"
 #include "py/stackctrl.h"
 
-#if MICROPY_PY_BUILTINS_STR_UNICODE
+#if (MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_BUILTINS_STR_SJIS)
 #include "py/unicode.h"
 #endif
 
@@ -125,7 +125,7 @@ STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span
         e = (mp_int_t)utf8_ptr_to_index((const byte *)begin, (const byte *)self->caps[no * 2 + 1]);
     }
 
-    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    #if (MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_BUILTINS_STR_SJIS)
     if (mp_obj_get_type(self->str) == &mp_type_str) {
         const byte *begin = (const byte *)mp_obj_str_get_str(self->str);
         if (s != -1) {
