@@ -4,6 +4,9 @@
 
 #include "re1.5.h"
 
+// Matches: DSWdsw
+#define MATCH_NAMED_CLASS_CHAR(c) (((c) | 0x20) == 'd' || ((c) | 0x24) == 'w')
+
 #define INSERT_CODE(at, num, pc) \
     ((code ? memmove(&code[at + num], &code[at], (pc - at) * sizeof(code[0])) : 0), pc += num)
 #define REL(at, to) (to - at - 2)
@@ -31,7 +34,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
         case '\\':
             re++;
             if (!*re) return NULL; // Trailing backslash
-            if ((*re | 0x20) == 'd' || (*re | 0x20) == 's' || (*re | 0x20) == 'w') {
+            if (MATCH_NAMED_CLASS_CHAR(*re)) {
                 term = PC;
                 EMIT(PC++, NamedClass);
                 EMIT(PC++, re_get_char(re));
@@ -62,10 +65,22 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             }
             PC++; // Skip # of pair byte
             prog->len++;
+<<<<<<< HEAD
             for (cnt = 0; *re != ']'; re = re_next_char(re), cnt++) {
                 if (*re == '\\') {
+=======
+            for (cnt = 0; *re != ']'; re++, cnt++) {
+                char c = *re;
+                if (c == '\\') {
+>>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
                     ++re;
+                    c = *re;
+                    if (MATCH_NAMED_CLASS_CHAR(c)) {
+                        c = RE15_CLASS_NAMED_CLASS_INDICATOR;
+                        goto emit_char_pair;
+                    }
                 }
+<<<<<<< HEAD
                 if (!*re) return NULL;
                 EMIT(PC++, re_get_char(re));
                 const char *re2 = re_next_char(re);
@@ -73,6 +88,15 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
                     re = &re2[1];
                 }
                 EMIT(PC++, re_get_char(re));
+=======
+                if (!c) return NULL;
+                if (re[1] == '-' && re[2] != ']') {
+                    re += 2;
+                }
+            emit_char_pair:
+                EMIT(PC++, c);
+                EMIT(PC++, *re);
+>>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
             }
             EMIT_CHECKED(term + 1, cnt);
             break;

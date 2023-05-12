@@ -7,7 +7,19 @@ int _re1_5_classmatch(const unichar *pc, const char *sp)
     int is_positive = (pc[-1] == Class);
     int cnt = *pc++;
     while (cnt--) {
+<<<<<<< HEAD
         if (ch >= *pc && ch <= pc[1]) return is_positive;
+=======
+        if (*pc == RE15_CLASS_NAMED_CLASS_INDICATOR) {
+            if (_re1_5_namedclassmatch(pc + 1, sp)) {
+                return is_positive;
+            }
+        } else {
+            if (*sp >= *pc && *sp <= pc[1]) {
+                return is_positive;
+            }
+        }
+>>>>>>> 294baf52b346e400e2255c6c1e82af5b978b18f7
         pc += 2;
     }
     return !is_positive;
