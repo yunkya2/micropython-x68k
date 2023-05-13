@@ -2,7 +2,9 @@
 
 MicroPython のシャープ X680x0 向け移植です。
 
-[MicroPython](https://micropython.org/) v1.19.1 をベースにしています。
+[MicroPython](https://micropython.org/) v1.20.0 をベースにしています。
+* v1.19.1 からの差分は [こちら](https://github.com/micropython/micropython/releases/tag/v1.20.0) を参照してください。
+
 
 ## ビルド方法
 
@@ -60,7 +62,7 @@ $ make
 
 ## X680x0固有ライブラリ
 
-MicroPython 自体の使い方は [公式ドキュメント](https://micropython-docs-ja.readthedocs.io/ja/v1.19.1ja/index.html) を参照してください。
+MicroPython 自体の使い方は [公式ドキュメント](https://micropython-docs-ja.readthedocs.io/ja/v1.20ja/index.html) を参照してください。
 
 X680x0版では、加えて以下のライブラリをサポートしています。
 
@@ -83,10 +85,8 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 * `x68k.curon()`
 * `x68k.curoff()`
   * カーソル表示をON/OFFします。
-
 * `x68k.fontrom()`
   * フォントROM領域の `memoryview` オブジェクトを返します。読み出し専用です。
-
 * `x68k.i.<IOCSコール名>`
   * IOCSコール番号を定数で定義しています。
     * 例: `x68k.i.B_PRINT` = 0x21
@@ -100,7 +100,6 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
       * 与えられたバッファに書き込みを行うようなIOCSに対しては、名前を `a1w`, `a2w` にして`bytearray`のような書き換え可能なオブジェクトを与えます。
   * IOCS実行後のd0レジスタの値が関数の戻り値となります。他のレジスタの値が必要な場合は、`rd`, `ra`にそれぞれデータレジスタ、アドレスレジスタの個数を指定することでそれらのレジスタ値を並べたタプルを返します。
     * `rd=2`, `ra=1` を指定すると、関数の戻り値は `(d0,d1,d2,a1)` のタプルとなります。
-
 * `x68k.d.<DOSコール名>`
   * DOSコール番号を定数で定義しています。
     * 例: `x68k.d.PRINT` = 0xff09
@@ -119,7 +118,6 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
       x68k.dos(x68k.d.GETDPB,struct.pack('hl',0,ctypes.addressof(buf)))
       ```
     * DOS _GETDPBは「1ワードのドライブ番号」「94バイトのバッファを指す1ロングワードのポインタ」をこの順にスタックに積んで呼び出す仕様なので、`struct.pack`のフォーマット文字列`'hl'` によってこのデータ配置を指定しています。
-
 * `x68k.mpyaddr()`
   * MicroPython本体のメモリ上の開始アドレスを返します。デバッグ用です。
 
@@ -136,7 +134,6 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 
   # ここからはユーザーモード
   ```
-
 * `x68k.issuper()`
   * スーパーバイザモードであれば `True` を、ユーザーモードであれば `False` を返します。
 * `x68k.super([mode])`
@@ -178,10 +175,8 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 * `GVRam.symbol(x, y, str, xmag, ymag, c [,ftype, angle])` -- 文字列描画
 * `GVRam.get(x0, y0, x1, y1, buf)` -- 範囲内のデータ取得
 * `GVRam.put(x0, y0, x1, y1, buf)` -- 範囲内へデータ書き込み
-
 * `x68k.vpage(page)`
   * グラフィック画面の表示ページを設定します。`page`のビット0～ビット3が各ページ番号に対応します。
-
   ```
   import x68k
   x68k.crtmod(16,True)
@@ -191,6 +186,7 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
   g.fill(100, 100, 200, 200, 9)
   g.symbol(10, 300, 'MicroPython!', 2, 2, 7)
   ```
+
 #### クラス `TVRam` -- テキストVRAM描画
 
 * class `x68k.TVRam()`
@@ -253,7 +249,7 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 
 #### クラス `IntVSync`, `IntRaster`, `IntTimerD`, `IntOpm` -- 割り込みハンドラ登録
 
-* これらのクラスによって、Python言語で書かれた割り込みハンドラを登録することができます。割り込みハンドラには通常の関数と異なるさまざまな制約が存在します。詳細は[公式ドキュメント](https://micropython-docs-ja.readthedocs.io/ja/v1.19.1ja/reference/isr_rules.html)を参照してください。
+* これらのクラスによって、Python言語で書かれた割り込みハンドラを登録することができます。割り込みハンドラには通常の関数と異なるさまざまな制約が存在します。詳細は[公式ドキュメント](https://micropython-docs-ja.readthedocs.io/ja/v1.20ja/reference/isr_rules.html)を参照してください。
   * 割り込みハンドラは後述のネイティブコードまたはバイパーコード、インラインアセンブラを使用するなどして、出来るだけ早く処理を完了させるようにしてください。
 * class `x68k.IntVSync([callback, arg, mode, disp, cycle])`
   * IntVSync オブジェクトを構築します。このオブジェクトで垂直同期による割り込みハンドラを登録します。
@@ -367,7 +363,7 @@ MicroPythonのネイティブ/バイパーコードエミッター機能をサ�
 
 `@micropython.native` または `@micropython.viper` デコレータを付けた関数では通常のバイトコードの代わりにCPUの機械語コードが出力され、それをCPUが直接実行することで実行速度を高速化します。
 
-詳細は公式ドキュメントの [ネイティブコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.19.1ja/reference/speed_python.html#the-native-code-emitter) および [バイパーコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.19.1ja/reference/speed_python.html#the-viper-code-emitter) を参照してください。
+詳細は公式ドキュメントの [ネイティブコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.20ja/reference/speed_python.html#the-native-code-emitter) および [バイパーコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.20ja/reference/speed_python.html#the-viper-code-emitter) を参照してください。
 
 ## `mpycross` プリコンパイラ
 
