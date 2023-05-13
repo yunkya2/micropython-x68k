@@ -61,7 +61,7 @@
 
 // Allow exception details in low-memory conditions.
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
-#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (256)
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)
 
 // Allow loading of .mpy files.
 #define MICROPY_PERSISTENT_CODE_LOAD   (1)
