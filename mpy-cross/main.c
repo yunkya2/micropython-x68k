@@ -213,9 +213,17 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     // set default compiler configuration
     mp_dynamic_compiler.small_int_bits = 31;
+#ifndef MICROPY_MPYCROSS_DEFAULT_ARCH
     // don't support native emitter unless -march is specified
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
+#else
+    mp_dynamic_compiler.native_arch = MICROPY_MPYCROSS_DEFAULT_ARCH;
+#endif
+#ifndef MICROPY_MPYCROSS_DEFAULT_NLR_NUM_REGS
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
+#else
+    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_MPYCROSS_DEFAULT_NLR_NUM_REGS;
+#endif
 
     const char *input_file = NULL;
     const char *output_file = NULL;
