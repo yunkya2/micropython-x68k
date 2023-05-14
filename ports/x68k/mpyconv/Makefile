@@ -42,7 +42,7 @@ SRC_C = \
 OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-TARGET := mpycross.x
+TARGET := mpyconv.x
 TARGETELF = $(TARGET).elf
 
 all: $(TARGET)

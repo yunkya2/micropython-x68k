@@ -76,18 +76,18 @@ $(TARGET): $(OBJ)
 
 include $(TOP)/py/mkrules.mk
 
-mpycross-all:
-	make -C mpycross all
+mpyconv-all:
+	make -C mpyconv all
 
-mpycross-clean:
-	make -C mpycross clean
+mpyconv-clean:
+	make -C mpyconv clean
 
-release: clean all mpycross-clean mpycross-all
+release: clean all mpyconv-clean mpyconv-all
 	cp README*.md build
 	rm -rf build/sample
 	mkdir build/sample
 	for f in sample/*.py; do \
 		sed 's/$$/\r/' $$f > build/$$f; \
 	done
-	cp mpycross/mpycross.x build
-	(cd build; zip -r micropython-$(shell git describe).zip micropython.x mpycross.x *.md sample)
+	cp mpyconv/mpyconv.x build
+	(cd build; zip -r micropython-$(shell git describe).zip micropython.x mpyconv.x *.md sample)
