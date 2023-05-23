@@ -120,6 +120,15 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
     * DOS _GETDPBは「1ワードのドライブ番号」「94バイトのバッファを指す1ロングワードのポインタ」をこの順にスタックに積んで呼び出す仕様なので、`struct.pack`のフォーマット文字列`'hl'` によってこのデータ配置を指定しています。
 * `x68k.mpyaddr()`
   * MicroPython本体のメモリ上の開始アドレスを返します。デバッグ用です。
+* `x68k.loadfnc(file [,flag])`
+  * X-BASIC の外部関数ファイルを読み込みます。
+  * 詳細は[こちらのドキュメント](README-xfnc.md)を参照してください。
+* `x68k.xarray(typecode [,sub1][,sub2][,iterable])`
+* `x68k.xarray_char([sub1][,sub2][,iterable])`
+* `x68k.xarray_int([sub1][,sub2][,iterable])`
+* `x68k.xarray_float([sub1][,sub2][,iterable])`
+  * X-BASIC 外部関数の引数として用いることができる配列オブジェクトを構築します。
+  * 詳細は[こちらのドキュメント](README-xfnc.md)を参照してください。
 
 #### クラス `Super` -- スーパーバイザモード制御
 
@@ -270,7 +279,6 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 
   # 割り込みハンドラ登録なし
   ```
-
   構築したオブジェクトには以下のようなメソッドを呼び出すこともできますが、割り込みハンドラを登録したままプログラムを終了させるとシステムクラッシュなどの致命的な問題が発生する場合があるため、できるだけ上記の `with` ステートメントを用いるようにしてください。
   * `IntVSync.init([callback, arg, mode, disp, cycle])`
     * `a = x68k.IntVSync()` のように引数なしで構築したオブジェクトに対して、後付けで各引数を設定します。
@@ -305,7 +313,6 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 
   # ここからは割り込み許可
   ```
-
   以下の関数による割り込み禁止/許可もできますが、割り込み禁止状態のままプログラムを終了させるとキーボード入力が効かなくなるなどの致命的な問題が発生する場合があるため、できるだけ上記の `with` ステートメントを用いるようにしてください。
 * `x68k.intDisable()`
   * 割り込み禁止状態にして、以前の SR レジスタの値を返します。
@@ -325,59 +332,58 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 
 ## 日本語文字列の扱い
 
-`str` クラスでの日本語文字列の扱いに対応しています。
+* `str` クラスでの日本語文字列の扱いに対応しています。
 オリジナルのMicroPythonは文字列を内部的にUTF-8で扱っていますが、X680x0の文字コードはシフトJISなので、文字列の内部処理に手を入れてシフトJISのまま扱うようになっています。
-
-このため、Python文字列内のエスケープシーケンス '\uXXXX' はUnicodeではなくシフトJISのコード番号を指定します。
-
-`str`オブジェクトと`bytes`/`bytearray`オブジェクトでは日本語文字列を代入したときの扱いが異なります。`str`オブジェクトは多バイト文字を文字単位で扱いますが、`bytes`/`bytearray`オブジェクトではバイトの並びとして扱います。
-
-```
->>> a=str('日本語','')      # strオブジェクトを作成
->>> a
-'\u93fa\u967b\u8cea'
->>> len(a)                  # 文字数は3文字
-3
->>> print(a)
-日本語
-
->>> b=bytes('日本語','')    # bytesオブジェクトを作成
->>> b
-b'\x93\xfa\x96{\x8c\xea'
->>> len(6)                  # 6バイト
-6
->>> print(b)
-b'\x93\xfa\x96{\x8c\xea'
-```
+* このため、Python文字列内のエスケープシーケンス '\uXXXX' はUnicodeではなくシフトJISのコード番号を指定します。
+* `str`オブジェクトと`bytes`/`bytearray`オブジェクトでは日本語文字列を代入したときの扱いが異なります。`str`オブジェクトは多バイト文字を文字単位で扱いますが、`bytes`/`bytearray`オブジェクトではバイトの並びとして扱います。
+  ```
+  >>> a=str('日本語','')      # strオブジェクトを作成
+  >>> a
+  '\u93fa\u967b\u8cea'
+  >>> len(a)                  # 文字数は3文字
+  3
+  >>> print(a)
+  日本語
+  >>> b=bytes('日本語','')    # bytesオブジェクトを作成
+  >>> b
+  b'\x93\xfa\x96{\x8c\xea'
+  >>> len(6)                  # 6バイト
+  6
+  >>> print(b)
+  b'\x93\xfa\x96{\x8c\xea'
+  ```
 
 ## インラインアセンブラ
 
-MicroPythonのインラインアセンブラ機能をサポートしています。
+* MicroPythonのインラインアセンブラ機能をサポートしています。
 `@micropython.asm_m68k` デコレータを付けた関数はインラインアセンブラ関数となります。
-
-詳細は[こちらのドキュメント](README-inlineasm.md)を参照してください。
+* 詳細は[こちらのドキュメント](README-inlineasm.md)を参照してください。
 
 ## ネイティブ/バイパーコードエミッター
 
-MicroPythonのネイティブ/バイパーコードエミッター機能をサポートしています。
+* MicroPythonのネイティブ/バイパーコードエミッター機能をサポートしています。
+* `@micropython.native` または `@micropython.viper` デコレータを付けた関数では通常のバイトコードの代わりにCPUの機械語コードが出力され、それをCPUが直接実行することで実行速度を高速化します。
+* 詳細は公式ドキュメントの [ネイティブコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.20ja/reference/speed_python.html#the-native-code-emitter) および [バイパーコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.20ja/reference/speed_python.html#the-viper-code-emitter) を参照してください。
 
-`@micropython.native` または `@micropython.viper` デコレータを付けた関数では通常のバイトコードの代わりにCPUの機械語コードが出力され、それをCPUが直接実行することで実行速度を高速化します。
-
-詳細は公式ドキュメントの [ネイティブコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.20ja/reference/speed_python.html#the-native-code-emitter) および [バイパーコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.20ja/reference/speed_python.html#the-viper-code-emitter) を参照してください。
-
-## `mpycross` プリコンパイラ
+## `mpyconv` プリコンパイラ
 
 * MicroPython はキーボードやファイルから入力されたプログラムをバイトコードにコンパイルしてから実行するため、特に大きなプログラムでは実行開始までに時間がかかります。
-* `mpycross.x` はバイトコードへのコンパイルを事前に行うことで、プログラムの実行開始までの時間を短縮することができます。通常のPythonモジュールの `.py`ファイルを元に、`.mpy`ファイルを生成します。
-  * 例: `mpycross sample/sprite.py`
+* `mpyconv.x` はバイトコードへのコンパイルを事前に行うことで、プログラムの実行開始までの時間を短縮することができます。通常のPythonモジュールの `.py`ファイルを元に、`.mpy`ファイルを生成します。
+  * 例: `mpyconv sample/sprite.py`
     * sprite.py と同じディレクトリに sprite.mpy を生成します。
-* ソースコードがネイティブ/バイパーコードエミッターを利用している場合、`mpycross` コマンドにネイティブコードのアーキテクチャを指定するオプション `-march=m68k` を与える必要があります。
+* (以前のバージョンでは `mpycross.x` という名前でしたが、`mpyconv.x` に変更されました。また、ネイティブコードのアーキテクチャはデフォルトで `m68k` が設定されます)
 
 ## モジュールのimportに関しての注意点
 
 * Pythonの `import` では.pyファイルを納めたディレクトリ名がモジュール名として扱われますが、Human68kのシステムディスクに `SYS` ディレクトリがあるため、このルートディレクトリで `import sys` を行うと組み込みの `sys` モジュールがimportされないという問題があります。
 * 組み込みモジュールは外部モジュールより優先して扱われるのですが、MicroPythonの本来の組み込みモジュール名は"u"の付いた `usys` であり `sys` はその別名という扱いになっていて、別名の方は外部モジュールに優先しないためこのような現象が起きるようです。
 * 組み込みモジュールのimportが上手くいかない場合、モジュール検索パス上に同名のディレクトリがないかを確認してみて下さい。本来のモジュール名を用いた `import usys` であれば、組み込みモジュールが優先されます。
+
+## X-BASIC 外部関数ファイル読み込み機能
+
+* X-BASIC で用いられている外部関数ファイル (*.FNC) の読み込みに対応しました。
+読み込んだ外部関数は MicroPython の関数として、Python のコードから直接呼び出すことができるようになります。
+* 詳細は[こちらのドキュメント](README-xfnc.md)を参照してください。
 
 ## ライセンス
 
