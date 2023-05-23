@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2023 Yuichi Nakamura
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,47 +25,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_PY_OBJARRAY_H
-#define MICROPY_INCLUDED_PY_OBJARRAY_H
+#ifndef MICROPY_INCLUDED_MODX68KXARRAY_H
+#define MICROPY_INCLUDED_MODX68KXARRAY_H
 
 #include "py/obj.h"
 
-// Used only for memoryview types, set in "typecode" to indicate a writable memoryview
-#define MP_OBJ_ARRAY_TYPECODE_FLAG_RW (0x80)
+// 1-dimension xarray header
+typedef struct _x68k_xarray_head_t {
+    size_t size;        // total data size within header
+    uint16_t dim;       // # of dimension - 1
+    uint16_t unitsz;    // data unit size
+    uint16_t sub1;      // 1st dimension subscript
+} x68k_xarray_head_t;
 
-// Bit size used for mp_obj_array_t.free member.
-#define MP_OBJ_ARRAY_FREE_SIZE_BITS (8 * sizeof(size_t) - 8)
+// 2-dimension xarray header
+typedef struct _x68k_xarray2_head_t {
+    x68k_xarray_head_t dim1;
+    uint16_t sub2;      // 2nd dimension subscript
+    size_t dim1sz;      // 1st dimension data size
+} x68k_xarray2_head_t;
 
-// This structure is used for all of bytearray, array.array, memoryview
-// objects.  Note that memoryview has different meaning for some fields,
-// see comment at the beginning of objarray.c.
-typedef struct _mp_obj_array_t {
+typedef struct _mp_obj_x68k_xarray_t {
     mp_obj_base_t base;
-    size_t typecode : 8;
-    // free is number of unused elements after len used elements
-    // alloc size = len + free
-    // But for memoryview, 'free' is reused as offset (in elements) into the
-    // parent object. (Union is not used to not go into a complication of
-    // union-of-bitfields with different toolchains). See comments in
-    // objarray.c.
-    size_t free : MP_OBJ_ARRAY_FREE_SIZE_BITS;
-    size_t len; // in elements
-    void *items;
-} mp_obj_array_t;
+    int typecode;
+    size_t len;         // in elements
+    void *items;        // direct pointer to the xarray contents
+    int dim;            // # of dimension
+    x68k_xarray2_head_t *head;  // pointer to the xarray header
+} mp_obj_x68k_xarray_t;
 
-#if MICROPY_PY_BUILTINS_MEMORYVIEW
-static inline void mp_obj_memoryview_init(mp_obj_array_t *self, size_t typecode, size_t offset, size_t len, void *items) {
-    self->base.type = &mp_type_memoryview;
-    self->typecode = typecode;
-    self->free = offset;
-    self->len = len;
-    self->items = items;
-}
-#endif
+// Accessor macros
+#define xarray_dim(o)       ((o)->dim)
+#define xarray_sub1(o)      ((o)->head->dim1.sub1 + 1)
+#define xarray_sub2(o)      ((o)->head->sub2 + 1)
 
-#if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY
-MP_DECLARE_CONST_FUN_OBJ_2(mp_obj_array_append_obj);
-MP_DECLARE_CONST_FUN_OBJ_2(mp_obj_array_extend_obj);
-#endif
-
-#endif // MICROPY_INCLUDED_PY_OBJARRAY_H
+#endif // MICROPY_INCLUDED_MODX68KXARRAY_H
