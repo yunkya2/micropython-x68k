@@ -200,6 +200,7 @@ STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TVRam), MP_ROM_PTR(&x68k_type_tvram) },
     { MP_ROM_QSTR(MP_QSTR_Sprite), MP_ROM_PTR(&x68k_type_sprite) },
 
+    { MP_ROM_QSTR(MP_QSTR_loadfnc), MP_ROM_PTR(&x68k_loadfnc_obj) },
     { MP_ROM_QSTR(MP_QSTR_xarray), MP_ROM_PTR(&x68k_type_xarray) },
     { MP_ROM_QSTR(MP_QSTR_xarray_char), MP_ROM_PTR(&x68k_xarray_char_obj) },
     { MP_ROM_QSTR(MP_QSTR_xarray_int), MP_ROM_PTR(&x68k_xarray_int_obj) },

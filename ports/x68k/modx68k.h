@@ -51,6 +51,7 @@ extern const mp_obj_type_t x68k_type_intdisable;
 MP_DECLARE_CONST_FUN_OBJ_0(x68k_intdisable_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(x68k_intenable_obj);
 
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_loadfnc_obj);
 extern const mp_obj_type_t x68k_type_xarray;
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_xarray_char_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_xarray_int_obj);

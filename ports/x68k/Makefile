@@ -37,6 +37,7 @@ SRC_C = \
 	modx68kiocs.c \
 	modx68kdos.c \
 	modx68kint.c \
+	modx68kfnc.c \
 	modx68kxarray.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_generic.c \
