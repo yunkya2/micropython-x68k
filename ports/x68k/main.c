@@ -410,6 +410,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
     #endif
 
+    extern void x68k_freefnc(void);
+    x68k_freefnc();
+
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
     #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag) {

@@ -40,7 +40,10 @@
 
 /* X-BASIC FNC file information table format */
 typedef struct _x68k_fnc_info_t {
-    void (*entry_boot)(void);
+    union {
+        void (*entry_boot)(void);
+        struct _x68k_fnc_info_t *next;
+    };
     void (*entry_run)(void);
     void (*entry_end)(void);
     void (*entry_exit)(void);
@@ -84,6 +87,8 @@ typedef struct _mp_obj_fun_x68kfnc_t {
 
 MP_DEFINE_CONST_FUN_OBJ_VAR(x68k_fnc_obj, 0, 0);
 static uint32_t x68kfnc_t_addr;
+
+static x68k_fnc_info_t *xfnc_list = NULL;
 
 /****************************************************************************/
 
@@ -283,9 +288,33 @@ STATIC mp_obj_t x68k_loadfnc(size_t n_args, const mp_obj_t *args) {
     // Read FNC file information table
 
     x68k_fnc_info_t *info = (x68k_fnc_info_t *)blocktop;
-    int nfnc = 0;
-    const char *tokentbl = info->tokentbl;
+    const char *tokentbl;
+    size_t tokentbl_len;
+    bool loaded = false;
 
+    // Get the size of token table
+    tokentbl = info->tokentbl;
+    while (*tokentbl != '\0') {
+        tokentbl = tokentbl + strlen(tokentbl) + 1;
+    }
+    tokentbl_len = tokentbl - info->tokentbl + 1;
+
+    // Confirm whether the token table already exists
+    x68k_fnc_info_t *ninfo;
+    for (ninfo = xfnc_list; ninfo != NULL; ninfo = ninfo->next) {
+        if (memcmp(info->tokentbl, ninfo->tokentbl, tokentbl_len) == 0) {
+            // Free FNC file and use existing file on the memory
+            _dos_mfree(blocktop);
+            info = ninfo;
+            loaded = true;
+            break;
+        }
+    }
+
+    int nfnc = 0;
+    tokentbl = info->tokentbl;
+
+    // Register functions in the FNC file
     while (*tokentbl != '\0') {
 #ifdef XFNC_DEBUG
         const uint16_t *pp = info->parmtbl[nfnc];
@@ -331,6 +360,35 @@ STATIC mp_obj_t x68k_loadfnc(size_t n_args, const mp_obj_t *args) {
         nfnc++;
     }
 
+    if (!loaded) {
+        // Call start entries only once
+        info->entry_boot();
+        info->entry_run();
+
+        info->next = xfnc_list;
+        xfnc_list = info;
+    }
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_loadfnc_obj, 1, 2, x68k_loadfnc);
+
+void x68k_freefnc(void)
+{
+    x68k_fnc_info_t *info;
+    x68k_fnc_info_t *next;
+
+    // Call all end entries
+    for (info = xfnc_list; info != NULL; info = next) {
+        next = info->next;
+        info->entry_end();
+    }
+
+    // Call all exit entries
+    for (info = xfnc_list; info != NULL; info = next) {
+        next = info->next;
+        info->entry_exit();
+        _dos_mfree(info);
+    }
+    xfnc_list = NULL;
+}
