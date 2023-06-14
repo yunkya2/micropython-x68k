@@ -312,45 +312,24 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_rmdir_obj, vfs_human_rmdir);
 
 STATIC mp_obj_t vfs_human_stat(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
+    struct stat sb;
     const char *path = vfs_human_get_path_str(self, path_in);
-    struct dos_filbuf fb;
     int ret;
-    ret = _dos_files(&fb, path, 0x37);
+    ret = stat(path, &sb);
     if (ret < 0) {
-        mp_raise_OSError(__doserr2errno(-ret));
+        mp_raise_OSError(errno);
     }
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
-    if (fb.atr & 0x10) {                                /* st_mode */
-        t->items[0] = MP_OBJ_NEW_SMALL_INT(MP_S_IFDIR|S_IREAD|S_IWRITE|S_IEXEC);
-    } else if (fb.atr & 0x20) {
-        if (fb.atr & 0x01) {
-            t->items[0] = MP_OBJ_NEW_SMALL_INT(MP_S_IFREG|S_IREAD);
-        } else {
-            t->items[0] = MP_OBJ_NEW_SMALL_INT(MP_S_IFREG|S_IREAD|S_IWRITE);
-        }
-    } else {
-        t->items[0] = MP_OBJ_NEW_SMALL_INT(0);
-    }
-    t->items[1] = MP_OBJ_NEW_SMALL_INT(0);              /* st_inode */
-    t->items[2] = MP_OBJ_NEW_SMALL_INT(0);              /* st_dev */
-    t->items[3] = MP_OBJ_NEW_SMALL_INT(1);              /* st_nlink */
-    t->items[4] = MP_OBJ_NEW_SMALL_INT(0);              /* st_uid */
-    t->items[5] = MP_OBJ_NEW_SMALL_INT(0);              /* st_gid */
-    t->items[6] = mp_obj_new_int_from_uint(fb.filelen); /* st_size */
-
-    struct tm tm = {
-        (fb.time & 0x1f) << 1,
-        (fb.time >> 5) & 0x3f,
-        (fb.time >> 11) & 0x1f,
-        (fb.date & 0x1f),
-        ((fb.date >> 5) & 0xf) - 1,
-        ((fb.date >> 9) & 0x7f) + 80,
-        0, 0, 0
-    };
-    time_t tt = mktime(&tm);
-    t->items[7] = mp_obj_new_int_from_uint(tt);         /* st_atime */
-    t->items[8] = mp_obj_new_int_from_uint(tt);         /* st_mtime */
-    t->items[9] = mp_obj_new_int_from_uint(tt);         /* st_ctime */
+    t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.st_mode);
+    t->items[1] = mp_obj_new_int_from_uint(sb.st_ino);
+    t->items[2] = mp_obj_new_int_from_uint(sb.st_dev);
+    t->items[3] = mp_obj_new_int_from_uint(sb.st_nlink);
+    t->items[4] = mp_obj_new_int_from_uint(sb.st_uid);
+    t->items[5] = mp_obj_new_int_from_uint(sb.st_gid);
+    t->items[6] = mp_obj_new_int_from_uint(sb.st_size);
+    t->items[7] = mp_obj_new_int_from_uint(sb.st_atime);
+    t->items[8] = mp_obj_new_int_from_uint(sb.st_mtime);
+    t->items[9] = mp_obj_new_int_from_uint(sb.st_ctime);
     return MP_OBJ_FROM_PTR(t);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_stat_obj, vfs_human_stat);
