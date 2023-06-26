@@ -84,6 +84,8 @@ mpyconv-all:
 mpyconv-clean:
 	make -C mpyconv clean
 
+RELFILE := micropython-$(shell git describe)
+
 release: clean all mpyconv-clean mpyconv-all
 	cp README*.md build
 	rm -rf build/sample
@@ -92,4 +94,7 @@ release: clean all mpyconv-clean mpyconv-all
 		sed 's/$$/\r/' $$f > build/$$f; \
 	done
 	cp mpyconv/mpyconv.x build
-	(cd build; zip -r micropython-$(shell git describe).zip micropython.x mpyconv.x *.md sample)
+	(cd build; zip -r $(RELFILE).zip micropython.x mpyconv.x *.md sample)
+	for d in $(basename $(wildcard README*.md)); do iconv -f utf-8 -t cp932 $$d.md | sed 's/$$/\r/' > build/$$d.txt ;done
+	(cd build; ../xdftool/xdftool.py c $(RELFILE).xdf micropython.x mpyconv.x *.txt sample)
+	(cd build; zip -r $(RELFILE).xdf.zip $(RELFILE).xdf)
