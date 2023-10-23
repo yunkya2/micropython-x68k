@@ -67,7 +67,7 @@ STATIC void os_error(void) {
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     write(STDERR_FILENO, str, len);
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
@@ -348,7 +348,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return handle_uncaught_exception(nlr.ret_val) & 0xff;
                 }
 
-                if (mp_obj_is_package(mod) && !subpkg_tried) {
+                // If this module is a package, see if it has a `__main__.py`.
+                mp_obj_t dest[2];
+                mp_load_method_protected(mod, MP_QSTR___path__, dest, true);
+                if (dest[0] != MP_OBJ_NULL && !subpkg_tried) {
                     subpkg_tried = true;
                     vstr_t vstr;
                     int len = strlen(argv[a + 1]);

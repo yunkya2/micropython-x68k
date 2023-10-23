@@ -76,23 +76,23 @@
 #define MICROPY_PY_SYS_ATEXIT          (1)
 
 // Configure the "os" module with extra unix features.
-#define MICROPY_PY_UOS_INCLUDEFILE     "ports/x68k/moduos.c"
-#define MICROPY_PY_UOS_ERRNO           (1)
-#define MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV (1)
-#define MICROPY_PY_UOS_SEP             (1)
-#define MICROPY_PY_UOS_SYSTEM          (1)
-#define MICROPY_PY_UOS_UNAME           (1)
-#define MICROPY_PY_UOS_STATVFS         (1)
-#define MICROPY_PY_UOS_URANDOM         (0)
-#define MICROPY_PY_UOS_SYNC            (0)
+#define MICROPY_PY_OS_INCLUDEFILE      "ports/x68k/modos.c"
+#define MICROPY_PY_OS_ERRNO            (1)
+#define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV (1)
+#define MICROPY_PY_OS_SEP              (1)
+#define MICROPY_PY_OS_SYSTEM           (1)
+#define MICROPY_PY_OS_UNAME            (1)
+#define MICROPY_PY_OS_STATVFS          (1)
+#define MICROPY_PY_OS_URANDOM          (0)
+#define MICROPY_PY_OS_SYNC             (0)
 
 // Enable the unix-specific "time" module.
-#define MICROPY_PY_UTIME               (1)
-#define MICROPY_PY_UTIME_TIME_TIME_NS  (1)
-#define MICROPY_PY_UTIME_INCLUDEFILE   "ports/x68k/modutime.c"
+#define MICROPY_PY_TIME                (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS   (1)
+#define MICROPY_PY_TIME_INCLUDEFILE    "ports/x68k/modtime.c"
 
 // Disable the "select" module.
-#define MICROPY_PY_USELECT             (0)
+#define MICROPY_PY_SELECT              (0)
 
 // Enable the "machine" module.
 #define MICROPY_PY_MACHINE             (1)
@@ -168,17 +168,17 @@ extern const struct _mp_print_t mp_stderr_print;
 
 #define MICROPY_SCHEDULER_STATIC_NODES          (1)
 
-#define MICROPY_PY_USELECT                      (0)
+#define MICROPY_PY_SELECT                       (0)
 #define MICROPY_PY_ASYNC_AWAIT                  (0)
-#define MICROPY_PY_UASYNCIO                     (0)
+#define MICROPY_PY_ASYNCIO                      (0)
 
 #define MICROPY_PY_BUILTINS_STR_UNICODE         (0)
 #define MICROPY_PY_BUILTINS_STR_SJIS            (1)
 #define MICROPY_PY_BUILTINS_STR_SJIS_CHECK      (1)
 
-#define MICROPY_PY_URE                          (1)
-#define MICROPY_PY_URE_MATCH_GROUPS             (1)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
-#define MICROPY_PY_URE_SUB                      (1)
+#define MICROPY_PY_RE                           (1)
+#define MICROPY_PY_RE_MATCH_GROUPS              (1)
+#define MICROPY_PY_RE_MATCH_SPAN_START_END      (1)
+#define MICROPY_PY_RE_SUB                       (1)
 
 #define MP_SSIZE_MAX (0x7fffffff)

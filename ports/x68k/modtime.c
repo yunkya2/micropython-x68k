@@ -44,7 +44,7 @@
 #error Unsupported clock() implementation
 #endif
 
-STATIC mp_obj_t mp_utime_time_get(void) {
+STATIC mp_obj_t mp_time_time_get(void) {
     #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -130,7 +130,7 @@ STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_time_mktime_obj, mod_time_mktime);
 
-#define MICROPY_PY_UTIME_EXTRA_GLOBALS \
+#define MICROPY_PY_TIME_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mod_time_gmtime_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mod_time_localtime_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&mod_time_mktime_obj) },
