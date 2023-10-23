@@ -429,13 +429,8 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     if (size == -1) {
         goto error;
     }
-<<<<<<< HEAD:extmod/modure.c
     mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, unichar, size, (mp_obj_type_t *)&re_type);
-    #if MICROPY_PY_URE_DEBUG
-=======
-    mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, char, size, (mp_obj_type_t *)&re_type);
     #if MICROPY_PY_RE_DEBUG
->>>>>>> e00a144008f368df878c12606fdbf651af2a1dc0:extmod/modre.c
     int flags = 0;
     if (n_args > 1) {
         flags = mp_obj_get_int(args[1]);
