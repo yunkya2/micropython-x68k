@@ -64,6 +64,14 @@ STATIC void os_error(void) {
     mp_raise_type(&mp_type_OSError);
 }
 
+#if !MICROPY_PY_SYS_PATH
+#error "The x68k port requires MICROPY_PY_SYS_PATH=1"
+#endif
+
+#if !MICROPY_PY_SYS_ARGV
+#error "The x68k port requires MICROPY_PY_SYS_ARGV=1"
+#endif
+
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     write(STDERR_FILENO, str, len);
@@ -260,44 +268,40 @@ MP_NOINLINE int main_(int argc, char **argv) {
         MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
     }
 
-    char *home = getenv("HOME");
-    char *path = getenv("MICROPYPATH");
-    if (path == NULL) {
-        path = MICROPY_PY_SYS_PATH_DEFAULT;
-    }
-    size_t path_num = 1; // [0] is for current dir (or base dir of the script)
-    if (*path == PATHLIST_SEP_CHAR) {
-        path_num++;
-    }
-    for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
-        path_num++;
-        if (p != NULL) {
-            p++;
-        }
-    }
-    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), path_num);
-    mp_obj_t *path_items;
-    mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     {
-        char *p = path;
-        for (mp_uint_t i = 1; i < path_num; i++) {
-            char *p1 = strchr(p, PATHLIST_SEP_CHAR);
-            if (p1 == NULL) {
-                p1 = p + strlen(p);
+        // sys.path starts as [""]
+        mp_sys_path = mp_obj_new_list(0, NULL);
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
+
+        // Add colon-separated entries from MICROPYPATH.
+        char *home = getenv("HOME");
+        char *path = getenv("MICROPYPATH");
+        if (path == NULL) {
+            path = MICROPY_PY_SYS_PATH_DEFAULT;
+        }
+        if (*path == PATHLIST_SEP_CHAR) {
+            // First entry is empty. We've already added an empty entry to sys.path, so skip it.
+            ++path;
+        }
+        bool path_remaining = *path;
+        while (path_remaining) {
+            char *path_entry_end = strchr(path, PATHLIST_SEP_CHAR);
+            if (path_entry_end == NULL) {
+                path_entry_end = path + strlen(path);
+                path_remaining = false;
             }
-            if (p[0] == '~' && p[1] == '/' && home != NULL) {
+            if (path[0] == '~' && path[1] == '/' && home != NULL) {
                 // Expand standalone ~ to $HOME
                 int home_l = strlen(home);
                 vstr_t vstr;
-                vstr_init(&vstr, home_l + (p1 - p - 1) + 1);
+                vstr_init(&vstr, home_l + (path_entry_end - path - 1) + 1);
                 vstr_add_strn(&vstr, home, home_l);
-                vstr_add_strn(&vstr, p + 1, p1 - p - 1);
-                path_items[i] = mp_obj_new_str_from_vstr(&vstr);
+                vstr_add_strn(&vstr, path + 1, path_entry_end - path - 1);
+                mp_obj_list_append(mp_sys_path, mp_obj_new_str_from_vstr(&vstr));
             } else {
-                path_items[i] = mp_obj_new_str_via_qstr(p, p1 - p);
+                mp_obj_list_append(mp_sys_path, mp_obj_new_str_via_qstr(path, path_entry_end - path));
             }
-            p = p1 + 1;
+            path = path_entry_end + 1;
         }
     }
 
@@ -382,6 +386,22 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 return invalid_args();
             }
         } else {
+#if 0
+            char *pathbuf = malloc(MICROPY_ALLOC_PATH_MAX);
+            char *basedir = realpath(argv[a], pathbuf);
+            if (basedir == NULL) {
+                mp_printf(&mp_stderr_print, "%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
+                free(pathbuf);
+                // CPython exits with 2 in such case
+                ret = 2;
+                break;
+            }
+
+            // Set base dir of the script as first entry in sys.path.
+            char *p = strrchr(basedir, '/');
+            mp_obj_list_store(mp_sys_path, MP_OBJ_NEW_SMALL_INT(0), mp_obj_new_str_via_qstr(basedir, p - basedir));
+            free(pathbuf);
+#endif
             set_sys_argv(argv, argc, a);
             ret = pyexec_file(argv[a]);
             break;
