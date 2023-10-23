@@ -27,7 +27,6 @@ SRC_C = \
 	vfs_human.c \
 	vfs_human_file.c \
 	input.c \
-	modutime.c \
 	modmachine.c \
 	machine_pin.c \
 	modx68k.c \

@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2014-2017 Paul Sokolovsky
- * Copyright (c) 2014-2017 Damien P. George
+ * Copyright (c) 2014-2023 Damien P. George
  * Copyright (c) 2023      Yuichi Nakamura
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,9 +26,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#if MICROPY_PY_UTIME
-
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -36,10 +33,27 @@
 #include <sys/time.h>
 #include <math.h>
 
-#include "py/runtime.h"
-#include "py/smallint.h"
 #include "py/mphal.h"
-#include "extmod/utime_mphal.h"
+#include "py/runtime.h"
+
+#define MP_CLOCKS_PER_SEC CLOCKS_PER_SEC
+
+#if defined(MP_CLOCKS_PER_SEC)
+#define CLOCK_DIV (MP_CLOCKS_PER_SEC / MICROPY_FLOAT_CONST(1000.0))
+#else
+#error Unsupported clock() implementation
+#endif
+
+STATIC mp_obj_t mp_utime_time_get(void) {
+    #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    mp_float_t val = tv.tv_sec + (mp_float_t)tv.tv_usec / 1000000;
+    return mp_obj_new_float(val);
+    #else
+    return mp_obj_new_int((mp_int_t)time(NULL));
+    #endif
+}
 
 STATIC mp_obj_t mod_time_gm_local_time(size_t n_args, const mp_obj_t *args, struct tm *(*time_func)(const time_t *timep)) {
     time_t t;
@@ -116,42 +130,7 @@ STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_time_mktime_obj, mod_time_mktime);
 
-// Returns the number of seconds since the Epoch.
-STATIC mp_obj_t time_time(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return mp_obj_new_int_from_ull(tv.tv_sec);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
-
-STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
-
-    { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mod_time_gmtime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mod_time_localtime_obj) },
+#define MICROPY_PY_UTIME_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mod_time_gmtime_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mod_time_localtime_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&mod_time_mktime_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
-    { MP_ROM_QSTR(MP_QSTR_time_ns), MP_ROM_PTR(&mp_utime_time_ns_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mp_utime_ticks_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
-
-const mp_obj_module_t mp_module_utime = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_utime);
-
-#endif // MICROPY_PY_UTIME
