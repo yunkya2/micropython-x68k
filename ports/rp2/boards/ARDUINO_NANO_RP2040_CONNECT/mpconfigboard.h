@@ -8,7 +8,7 @@
 #define MICROPY_PY_NETWORK              (1)
 
 // Enable MD5 hash.
-#define MICROPY_PY_UHASHLIB_MD5         (1)
+#define MICROPY_PY_HASHLIB_MD5          (1)
 
 // Disable internal error numbers.
 #define MICROPY_USE_INTERNAL_ERRNO      (0)
@@ -39,7 +39,7 @@
 
 // Bluetooth config.
 #define MICROPY_HW_BLE_UART_ID          (1)
-#define MICROPY_HW_BLE_UART_BAUDRATE    (119600)
+#define MICROPY_HW_BLE_UART_BAUDRATE    (115200)
 
 // WiFi/NINA-W10 config.
 #define MICROPY_HW_WIFI_SPI_ID          (1)

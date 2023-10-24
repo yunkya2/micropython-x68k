@@ -78,10 +78,9 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 APP_MODS_SRC_C = $(addprefix mods/,\
 	modmachine.c \
 	modnetwork.c \
-	moduos.c \
-	modusocket.c \
-	modussl.c \
-	modutime.c \
+	modos.c \
+	modsocket.c \
+	modssl.c \
 	modwipy.c \
 	modwlan.c \
 	pybadc.c \
@@ -199,7 +198,7 @@ WIPY_IP ?= '192.168.1.1'
 WIPY_USER ?= 'micro'
 WIPY_PWD ?= 'python'
 
-all: $(BUILD)/mcuimg.bin
+all: $(BUILD)/firmware.zip
 
 .PHONY: deploy-ota
 
@@ -219,6 +218,10 @@ $(BUILD)/application.bin: $(BUILD)/application.axf
 $(BUILD)/mcuimg.bin: $(BUILD)/application.bin
 	$(ECHO) "Create $@"
 	$(Q)$(SHELL) $(APP_SIGN) $(BUILD)
+
+$(BUILD)/firmware.zip: $(BUILD)/mcuimg.bin
+	$(ECHO) "Create $@"
+	$(Q)$(ZIP) -j $@ $<
 
 MAKE_PINS = boards/make-pins.py
 BOARD_PINS = boards/$(BOARD)/pins.csv

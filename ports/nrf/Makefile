@@ -4,8 +4,8 @@ ifdef BOARD_DIR
 # the path as the board name.
 BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
-# If not given on the command line, then default to pca10040.
-BOARD ?= pca10040
+# If not given on the command line, then default to PCA10040.
+BOARD ?= PCA10040
 BOARD_DIR ?= boards/$(BOARD)
 endif
 
@@ -329,9 +329,8 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/timer.c \
 	machine/rtcounter.c \
 	machine/temp.c \
-	uos/moduos.c \
-	uos/microbitfs.c \
-	utime/modutime.c \
+	os/modos.c \
+	os/microbitfs.c \
 	board/modboard.c \
 	board/led.c \
 	ubluepy/modubluepy.c \
@@ -537,7 +536,7 @@ SRC_QSTR += $(SRC_C) $(SRC_SHARED_C) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES)
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-# Making OBJ use an order-only depenedency on the generated pins.h file
+# Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
@@ -552,12 +551,6 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qst
 
 $(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
 	$(call compile_c)
-
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
 
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os -fno-lto
 

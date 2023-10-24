@@ -13,8 +13,13 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
-# If the build directory is not given, make it reflect the board name.
+# If the build directory is not given, make it reflect the board name (and
+# optionally the board variant).
+ifneq ($(BOARD_VARIANT),)
+BUILD ?= build-$(BOARD)-$(BOARD_VARIANT)
+else
 BUILD ?= build-$(BOARD)
+endif
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
@@ -42,9 +47,6 @@ include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/libhydrogen lib/stm32lib
-
-query-variants:
-	$(ECHO) "VARIANTS:" $(BOARD_VARIANTS)
 
 LD_DIR=boards
 USBDEV_DIR=usbdev
@@ -109,6 +111,8 @@ CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
+
+AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
 
 # Configure for nan-boxing object model if requested
 ifeq ($(NANBOX),1)
@@ -318,6 +322,7 @@ SRC_C += \
 	spi.c \
 	pyb_spi.c \
 	qspi.c \
+	octospi.c \
 	uart.c \
 	ulpi.c \
 	can.c \
@@ -337,7 +342,6 @@ SRC_C += \
 	modmachine.c \
 	modpyb.c \
 	modstm.c \
-	modutime.c \
 	network_lan.c \
 	extint.c \
 	usrsw.c \
@@ -356,6 +360,7 @@ SRC_C += \
 	dac.c \
 	adc.c \
 	sdio.c \
+	subghz.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O += \
@@ -399,10 +404,11 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_tim.c \
 	hal_tim_ex.c \
 	hal_uart.c \
+	ll_rcc.c \
 	ll_utils.c \
 	)
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h7 l0 l4 wb))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l1 l4 wb))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_pcd.c \
 	hal_pcd_ex.c \
@@ -431,9 +437,15 @@ $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_hal_mmc.o: CFLAGS += -Wno
 endif
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h7))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_dma_ex.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),h5))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_icache.c \
 	)
 endif
 
@@ -530,12 +542,6 @@ endif
 $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
-
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
 
 define RUN_DFU
 	$(ECHO) "Writing $(1) to the board"
@@ -658,7 +664,7 @@ SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)
 
-# Making OBJ use an order-only depenedency on the generated pins.h file
+# Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know

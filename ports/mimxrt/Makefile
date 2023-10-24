@@ -137,16 +137,23 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_pit.c \
 	$(MCU_DIR)/drivers/fsl_pwm.c \
 	$(MCU_DIR)/drivers/fsl_sai.c \
+	$(MCU_DIR)/drivers/fsl_snvs_hp.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
 	$(MCU_DIR)/system_$(MCU_SERIES)$(MCU_CORE).c \
-	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
+
+# Use a specific boot header for 1062 so the Teensy loader doesn't erase the filesystem.
+ifeq ($(MCU_SERIES), MIMXRT1062)
+SRC_HAL_IMX_C += hal/fsl_flexspi_nor_boot.c
+else
+SRC_HAL_IMX_C += $(MCU_DIR)/xip/fsl_flexspi_nor_boot.c
+endif
 
 ifeq ($(MICROPY_HW_SDRAM_AVAIL),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
 endif
 
-ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
 endif
 
@@ -183,7 +190,9 @@ SRC_C += \
 	drivers/dht/dht.c \
 	eth.c \
 	fatfs_port.c \
+	flash.c \
 	hal/pwm_backport.c \
+	help.c \
 	led.c \
 	machine_adc.c \
 	machine_bitstream.c \
@@ -202,13 +211,13 @@ SRC_C += \
 	mimxrt_sdram.c \
 	modmachine.c \
 	modmimxrt.c \
-	modutime.c \
 	mphalport.c \
 	mpnetworkport.c \
 	network_lan.c \
 	pendsv.c \
 	pin.c \
 	sdcard.c \
+	sdio.c \
 	systick.c \
 	ticks.c \
 	tusb_port.c \
@@ -254,6 +263,14 @@ ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
     SRC_HAL_C += $(BOARD_DIR)/$(FLEXSPI_FLASH_TYPE)_config.c
 else
     SRC_HAL_C += hal/$(FLEXSPI_FLASH_TYPE)_config.c
+endif
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_C += mpbthciport.c
+endif # MICROPY_PY_BLUETOOTH
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+SRC_C += mpnimbleport.c
 endif
 
 # Math library source files
@@ -315,7 +332,6 @@ endif
 # Set default values for optional variables
 MICROPY_HW_SDRAM_AVAIL ?= 0
 MICROPY_HW_SDRAM_SIZE ?= 0
-MICROPY_PY_MACHINE_SDCARD ?= 0
 
 # Configure default compiler flags
 CFLAGS += \
@@ -325,7 +341,7 @@ CFLAGS += \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-DBOARD_$(BOARD) \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
-	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT \
+	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT1XXX \
 	-DCLOCK_CONFIG_H='<boards/$(MCU_SERIES)_clock_config.h>' \
 	-DCPU_$(MCU_SERIES)$(MCU_CORE) \
 	-DCPU_$(MCU_VARIANT) \
@@ -335,7 +351,6 @@ CFLAGS += \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DMICROPY_HW_SDRAM_AVAIL=$(MICROPY_HW_SDRAM_AVAIL) \
 	-DMICROPY_HW_SDRAM_SIZE=$(MICROPY_HW_SDRAM_SIZE) \
-	-DMICROPY_PY_MACHINE_SDCARD=$(MICROPY_PY_MACHINE_SDCARD) \
 	-DSPI_RETRY_TIMES=1000000 \
 	-DUART_RETRY_TIMES=1000000 \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
@@ -390,6 +405,10 @@ CFLAGS += \
 	-DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1
 endif
 
+ifdef MICROPY_HW_FLASH_CLK
+	CFLAGS += -DMICROPY_HW_FLASH_CLK=$(MICROPY_HW_FLASH_CLK)
+endif
+
 CFLAGS += $(CFLAGS_EXTRA)
 
 MPY_CROSS_FLAGS += -march=armv7m
@@ -437,6 +456,7 @@ OBJ += $(PY_O)
 OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_TINYUSB_C:.c=.o))

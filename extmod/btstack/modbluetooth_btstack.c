@@ -544,8 +544,6 @@ STATIC void set_random_address(void) {
 
         DEBUG_printf("set_random_address: Generating static address using mp_hal_get_mac\n");
         mp_hal_get_mac(MP_HAL_MAC_BDADDR, static_addr);
-        // Mark it as STATIC (not RPA or NRPA).
-        static_addr[0] |= 0xc0;
 
         #else
 
@@ -558,6 +556,8 @@ STATIC void set_random_address(void) {
         }
 
         #endif // MICROPY_BLUETOOTH_USE_MP_HAL_GET_MAC_STATIC_ADDRESS
+        // Mark it as STATIC (not RPA or NRPA).
+        static_addr[0] |= 0xc0;
 
         DEBUG_printf("set_random_address: Address generated.\n");
         gap_random_address_set(static_addr);
@@ -883,7 +883,7 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
 
     if (!append) {
         // This will reset the DB.
-        // Becase the DB is statically allocated, there's no problem with just re-initing it.
+        // Because the DB is statically allocated, there's no problem with just re-initing it.
         // Note this would be a memory leak if we enabled HAVE_MALLOC (there's no API to free the existing db).
         att_db_util_init();
 

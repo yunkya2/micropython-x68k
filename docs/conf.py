@@ -51,6 +51,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
+    'sphinxcontrib.jquery',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -233,7 +234,7 @@ latex_elements = {
 # Additional stuff for the LaTeX preamble.
 #'preamble': '',
 # Include 3 levels of headers in PDF ToC
-'preamble': '\setcounter{tocdepth}{2}',
+'preamble': r'\setcounter{tocdepth}{2}',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
