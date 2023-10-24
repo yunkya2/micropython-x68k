@@ -1,6 +1,6 @@
 import x68k
 from struct import pack
-from ctypes import addressof
+from uctypes import addressof
 import random
 
 x68k.crtmod(14, True)

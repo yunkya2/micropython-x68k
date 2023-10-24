@@ -1,6 +1,6 @@
 import x68k
 from struct import pack,unpack
-from ctypes import addressof
+from uctypes import addressof
 
 buf=bytearray(96)
 x68k.dos(x68k.d.GETDPB,pack('hl',0,addressof(buf)))
