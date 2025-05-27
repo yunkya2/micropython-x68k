@@ -925,6 +925,7 @@ STATIC void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
             asm_m68k_op16(&emit->as,
                           inst->instr | (o2.reg << 9) | (size << 6) | o1.ea);
             emit_inline_m68k_data(emit, size, r1, o1.data);
+            return;
         } else if (o1.type != OT_DREG) {
             goto bad_operand;
         }
