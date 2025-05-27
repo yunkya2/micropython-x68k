@@ -16,7 +16,7 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 
 LD = $(CC)
-CFLAGS += $(INC) -Os
+CFLAGS += $(INC) -Os -g
 CFLAGS += -Wall -Werror
 LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 #CFLAGS += -DNDEBUG
@@ -87,13 +87,13 @@ RELFILE := micropython-$(shell git describe)
 
 release: clean all mpyconv-clean mpyconv-all
 	cp README*.md build
+	./md2txtconv.py -r build/*.md
 	rm -rf build/sample
 	mkdir build/sample
 	for f in sample/*.py; do \
 		sed 's/$$/\r/' $$f > build/$$f; \
 	done
 	cp mpyconv/mpyconv.x build
-	(cd build; zip -r $(RELFILE).zip micropython.x mpyconv.x *.md sample)
-	for d in $(basename $(wildcard README*.md)); do iconv -f utf-8 -t cp932 $$d.md | sed 's/$$/\r/' > build/$$d.txt ;done
+	(cd build; zip -r $(RELFILE).zip micropython.x mpyconv.x *.txt sample)
 	(cd build; ../xdftool/xdftool.py c $(RELFILE).xdf micropython.x mpyconv.x *.txt sample)
 	(cd build; zip -r $(RELFILE).xdf.zip $(RELFILE).xdf)
