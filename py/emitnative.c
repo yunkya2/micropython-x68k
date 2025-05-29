@@ -59,11 +59,7 @@
 #endif
 
 // wrapper around everything in this file
-<<<<<<< HEAD
-#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_M68K
-=======
-#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_RV32 || N_DEBUG
->>>>>>> v1.24.0
+#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_RV32 || N_M68K || N_DEBUG
 
 // C stack layout for native functions:
 //  0:                          nlr_buf_t [optional]
@@ -2651,26 +2647,6 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             } else {
                 asm_xtensa_setcc_reg_reg_reg(emit->as, cc & ~0x80, REG_RET, reg_rhs, REG_ARG_2);
             }
-<<<<<<< HEAD
-            #elif N_M68K
-            static uint ccs[6 + 6] = {
-                // unsigned
-                ASM_M68K_CC_CC,
-                ASM_M68K_CC_HI,
-                ASM_M68K_CC_EQ,
-                ASM_M68K_CC_LS,
-                ASM_M68K_CC_CS,
-                ASM_M68K_CC_NE,
-                // signed
-                ASM_M68K_CC_LT,
-                ASM_M68K_CC_GT,
-                ASM_M68K_CC_EQ,
-                ASM_M68K_CC_LE,
-                ASM_M68K_CC_GE,
-                ASM_M68K_CC_NE,
-            };
-            asm_m68k_cmp_reg_reg_setcc(emit->as, REG_ARG_2, reg_rhs, ccs[op_idx], REG_RET);
-=======
             #elif N_RV32
             (void)op_idx;
             switch (op) {
@@ -2701,9 +2677,26 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 default:
                     break;
             }
+            #elif N_M68K
+            static uint ccs[6 + 6] = {
+                // unsigned
+                ASM_M68K_CC_CC,
+                ASM_M68K_CC_HI,
+                ASM_M68K_CC_EQ,
+                ASM_M68K_CC_LS,
+                ASM_M68K_CC_CS,
+                ASM_M68K_CC_NE,
+                // signed
+                ASM_M68K_CC_LT,
+                ASM_M68K_CC_GT,
+                ASM_M68K_CC_EQ,
+                ASM_M68K_CC_LE,
+                ASM_M68K_CC_GE,
+                ASM_M68K_CC_NE,
+            };
+            asm_m68k_cmp_reg_reg_setcc(emit->as, REG_ARG_2, reg_rhs, ccs[op_idx], REG_RET);
             #elif N_DEBUG
             asm_debug_setcc_reg_reg_reg(emit->as, op_idx, REG_RET, REG_ARG_2, reg_rhs);
->>>>>>> v1.24.0
             #else
             #error not implemented
             #endif

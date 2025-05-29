@@ -102,12 +102,9 @@ static const emit_method_table_t *emit_native_table[] = {
     &emit_native_thumb_method_table,
     &emit_native_xtensa_method_table,
     &emit_native_xtensawin_method_table,
-<<<<<<< HEAD
-    &emit_native_m68k_method_table,
-=======
     &emit_native_rv32_method_table,
+    &emit_native_m68k_method_table,
     &emit_native_debug_method_table,
->>>>>>> v1.24.0
 };
 
 #elif MICROPY_EMIT_NATIVE
@@ -124,15 +121,12 @@ static const emit_method_table_t *emit_native_table[] = {
 #define NATIVE_EMITTER(f) emit_native_xtensa_##f
 #elif MICROPY_EMIT_XTENSAWIN
 #define NATIVE_EMITTER(f) emit_native_xtensawin_##f
-<<<<<<< HEAD
-#elif MICROPY_EMIT_M68K
-#define NATIVE_EMITTER(f) emit_native_m68k_##f
-=======
 #elif MICROPY_EMIT_RV32
 #define NATIVE_EMITTER(f) emit_native_rv32_##f
+#elif MICROPY_EMIT_M68K
+#define NATIVE_EMITTER(f) emit_native_m68k_##f
 #elif MICROPY_EMIT_NATIVE_DEBUG
 #define NATIVE_EMITTER(f) emit_native_debug_##f
->>>>>>> v1.24.0
 #else
 #error "unknown native emitter"
 #endif
