@@ -131,18 +131,14 @@ static bool is_tail_of_identifier(mp_lexer_t *lex) {
     return is_head_of_identifier(lex) || is_digit(lex);
 }
 
-<<<<<<< HEAD
 #define MP_LEXER_EOF_DOS    ((unichar)'\x1a')   // EOF char for DOS file
 
-STATIC unichar readbyte(mp_lexer_t *lex) {
+static unichar readbyte(mp_lexer_t *lex) {
     unichar c = lex->reader.readbyte(lex->reader.data);
     return (c == MP_LEXER_EOF_DOS) ? MP_LEXER_EOF : c;
 }
 
-STATIC void next_char(mp_lexer_t *lex) {
-=======
 static void next_char(mp_lexer_t *lex) {
->>>>>>> v1.23.0
     if (lex->chr0 == '\n') {
         // a new line
         ++lex->line;

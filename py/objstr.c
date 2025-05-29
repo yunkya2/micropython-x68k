@@ -2176,13 +2176,8 @@ MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_memoryview_locals_dict,
     1); // Just the "hex" entry.
 #endif
 
-<<<<<<< HEAD
 #if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
-=======
-#if !MICROPY_PY_BUILTINS_STR_UNICODE
 static mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
->>>>>>> v1.23.0
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_str,
@@ -2424,13 +2419,8 @@ typedef struct _mp_obj_str8_it_t {
     size_t cur;
 } mp_obj_str8_it_t;
 
-<<<<<<< HEAD
 #if !(MICROPY_PY_BUILTINS_STR_UNICODE || MICROPY_PY_BUILTINS_STR_SJIS)
-STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
-=======
-#if !MICROPY_PY_BUILTINS_STR_UNICODE
 static mp_obj_t str_it_iternext(mp_obj_t self_in) {
->>>>>>> v1.23.0
     mp_obj_str8_it_t *self = MP_OBJ_TO_PTR(self_in);
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {

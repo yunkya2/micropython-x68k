@@ -429,11 +429,7 @@ static mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     if (size == -1) {
         goto error;
     }
-<<<<<<< HEAD
-    mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, unichar, size, (mp_obj_type_t *)&re_type);
-=======
-    mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, re.insts, char, size, (mp_obj_type_t *)&re_type);
->>>>>>> v1.23.0
+    mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, re.insts, unichar, size, (mp_obj_type_t *)&re_type);
     #if MICROPY_PY_RE_DEBUG
     int flags = 0;
     if (n_args > 1) {
