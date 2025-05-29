@@ -31,5 +31,5 @@
     { MP_ROM_QSTR(MP_QSTR_Pin),         MP_ROM_PTR(&machine_pin_type) }, \
 
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
 }

@@ -98,7 +98,7 @@ void mp_hal_set_interrupt_char(char c) {
     }
 }
 
-STATIC struct {
+static struct {
     int fno;
     const char *keydef;
 } setfnckey[] =
@@ -112,7 +112,7 @@ STATIC struct {
     { 31, "\x01" },     /* HOME  -- ^A */
 };
 
-STATIC char savefnckey[MP_ARRAY_SIZE(setfnckey)][6];
+static char savefnckey[MP_ARRAY_SIZE(setfnckey)][6];
 
 void mp_hal_setfnckey(void) {
     int i;

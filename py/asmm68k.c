@@ -65,7 +65,7 @@ void asm_m68k_exit(asm_m68k_t *as) {
     asm_m68k_op16(as, 0x4e75);  //  rts
 }
 
-STATIC mp_uint_t get_label_dest(asm_m68k_t *as, mp_uint_t label) {
+static mp_uint_t get_label_dest(asm_m68k_t *as, mp_uint_t label) {
     assert(label < as->base.max_num_labels);
     return as->base.label_offsets[label];
 }
@@ -112,7 +112,7 @@ void asm_m68k_cmp_reg_reg_setcc(asm_m68k_t *as, uint rd, uint rs, uint cond, uin
     asm_m68k_op_cc(as, 0x50c0, cond, rr);       // scc rr
 }
 
-STATIC void asm_m68k_jump_cond(asm_m68k_t *as, uint label, uint op) {
+static void asm_m68k_jump_cond(asm_m68k_t *as, uint label, uint op) {
     mp_uint_t dest = get_label_dest(as, label);
     mp_int_t rel = dest - as->base.code_offset;
     if ((dest != (mp_uint_t)-1) && (rel <= 0) && ((rel - 2) >= -0x80)) {

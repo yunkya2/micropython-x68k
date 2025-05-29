@@ -37,9 +37,9 @@
 /****************************************************************************/
 
 bool x68k_super_mode = false;
-STATIC int super_ssp;
+static int super_ssp;
 
-STATIC bool to_super(bool mode) {
+static bool to_super(bool mode) {
     if (mode && !x68k_super_mode) {
         super_ssp = _iocs_b_super(0);
         if (super_ssp < 0) {
@@ -62,25 +62,25 @@ typedef struct _mp_obj_x68k_super_t {
 } mp_obj_x68k_super_t;
 
 
-STATIC mp_obj_t x68k_super_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t x68k_super_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     mp_obj_x68k_super_t *self = mp_obj_malloc(mp_obj_x68k_super_t, type);
     self->oldstat = to_super(true);
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t x68k_super___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_super___exit__(size_t n_args, const mp_obj_t *args) {
     mp_obj_x68k_super_t *self = MP_OBJ_TO_PTR(args[0]);
     to_super(self->oldstat);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_super___exit___obj, 4, 4, x68k_super___exit__);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_super___exit___obj, 4, 4, x68k_super___exit__);
 
-STATIC const mp_rom_map_elem_t x68k_super_locals_dict_table[] = {
+static const mp_rom_map_elem_t x68k_super_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&x68k_super___exit___obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(x68k_super_locals_dict, x68k_super_locals_dict_table);
+static MP_DEFINE_CONST_DICT(x68k_super_locals_dict, x68k_super_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     x68k_type_super,
@@ -90,31 +90,31 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &x68k_super_locals_dict
     );
 
-STATIC mp_obj_t x68k_super(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_super(size_t n_args, const mp_obj_t *args) {
     bool mode = true;
     if (n_args > 0) {
         mode = mp_obj_is_true(args[0]);
     }
     return to_super(mode) ? mp_const_true : mp_const_false;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_super_obj, 0, 1, x68k_super);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_super_obj, 0, 1, x68k_super);
 
-STATIC mp_obj_t x68k_issuper(void) {
+static mp_obj_t x68k_issuper(void) {
     return x68k_super_mode ? mp_const_true : mp_const_false;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_issuper_obj, x68k_issuper);
+static MP_DEFINE_CONST_FUN_OBJ_0(x68k_issuper_obj, x68k_issuper);
 
 /****************************************************************************/
 
-STATIC mp_obj_t x68k_mpyaddr(void) {
+static mp_obj_t x68k_mpyaddr(void) {
     extern char _start;
     return MP_OBJ_NEW_SMALL_INT((int)&_start);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_mpyaddr_obj, x68k_mpyaddr);
+static MP_DEFINE_CONST_FUN_OBJ_0(x68k_mpyaddr_obj, x68k_mpyaddr);
 
 /****************************************************************************/
 
-STATIC mp_obj_t x68k_crtmod(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_crtmod(size_t n_args, const mp_obj_t *args) {
     mp_int_t mode = mp_obj_get_int(args[0]);
     bool clron = false;
 
@@ -128,23 +128,23 @@ STATIC mp_obj_t x68k_crtmod(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_crtmod_obj, 1, 2, x68k_crtmod);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_crtmod_obj, 1, 2, x68k_crtmod);
 
-STATIC mp_obj_t x68k_curon(void) {
+static mp_obj_t x68k_curon(void) {
     _iocs_os_curon();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_curon_obj, x68k_curon);
+static MP_DEFINE_CONST_FUN_OBJ_0(x68k_curon_obj, x68k_curon);
 
-STATIC mp_obj_t x68k_curoff(void) {
+static mp_obj_t x68k_curoff(void) {
     _iocs_os_curof();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_curoff_obj, x68k_curoff);
+static MP_DEFINE_CONST_FUN_OBJ_0(x68k_curoff_obj, x68k_curoff);
 
 #define REG_GPIP        (0xE88001)
 
-STATIC mp_obj_t x68k_vsync(void) {
+static mp_obj_t x68k_vsync(void) {
     int oldstat = to_super(true);
     while ((*(volatile uint8_t *)REG_GPIP & 0x10) == 0) {
         MICROPY_EVENT_POLL_HOOK
@@ -156,18 +156,18 @@ STATIC mp_obj_t x68k_vsync(void) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_vsync_obj, x68k_vsync);
+static MP_DEFINE_CONST_FUN_OBJ_0(x68k_vsync_obj, x68k_vsync);
 
 /****************************************************************************/
 
-STATIC mp_obj_t x68k_fontrom(void) {
+static mp_obj_t x68k_fontrom(void) {
     return mp_obj_new_memoryview('B', 0xc0000, (void *)0xf00000);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(x68k_fontrom_obj, x68k_fontrom);
+static MP_DEFINE_CONST_FUN_OBJ_0(x68k_fontrom_obj, x68k_fontrom);
 
 /****************************************************************************/
 
-STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_x68k) },
 
     { MP_ROM_QSTR(MP_QSTR_Super), MP_ROM_PTR(&x68k_type_super) },
@@ -207,7 +207,7 @@ STATIC const mp_rom_map_elem_t mp_module_x68k_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_xarray_float), MP_ROM_PTR(&x68k_xarray_float_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_x68k_globals, mp_module_x68k_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_x68k_globals, mp_module_x68k_globals_table);
 
 const mp_obj_module_t mp_module_x68k = {
     .base = { &mp_type_module },

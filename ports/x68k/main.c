@@ -49,18 +49,18 @@
 #include "input.h"
 
 // Command line options, with their defaults
-STATIC uint emit_opt = MP_EMIT_OPT_NONE;
+static uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
 // Heap size of GC heap (if enabled)
 long heap_size = 1024 * 1024;
 #endif
 
-STATIC void kbd_intr(void) {
+static void kbd_intr(void) {
     mp_raise_type(&mp_type_KeyboardInterrupt);
 }
 
-STATIC void os_error(void) {
+static void os_error(void) {
     mp_raise_type(&mp_type_OSError);
 }
 
@@ -72,7 +72,7 @@ STATIC void os_error(void) {
 #error "The x68k port requires MICROPY_PY_SYS_ARGV=1"
 #endif
 
-STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
+static void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     write(STDERR_FILENO, str, len);
     mp_os_dupterm_tx_strn(str, len);
@@ -84,7 +84,7 @@ const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 // If exc is SystemExit, return value where FORCED_EXIT bit set,
 // and lower 8 bits are SystemExit value. For all other exceptions,
 // return 1.
-STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
+static int handle_uncaught_exception(mp_obj_base_t *exc) {
     // check for SystemExit
     if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
         // None is an exit value of 0; an int is its value; anything else is 1
@@ -101,7 +101,7 @@ STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
     return 1;
 }
 
-STATIC void print_help(char **argv) {
+static void print_help(char **argv) {
     printf(
         "usage: %s [<opts>] [-X <implopt>] [-m <module> | <filename>]\n"
         "Options:\n"
@@ -135,13 +135,13 @@ STATIC void print_help(char **argv) {
     }
 }
 
-STATIC int invalid_args(void) {
+static int invalid_args(void) {
     fprintf(stderr, "Invalid command line arguments. Use -h option for help.\n");
     return 1;
 }
 
 // Process options which set interpreter init options
-STATIC void pre_process_options(int argc, char **argv) {
+static void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-c") == 0 || strcmp(argv[a], "-m") == 0) {
@@ -210,7 +210,7 @@ STATIC void pre_process_options(int argc, char **argv) {
     }
 }
 
-STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
+static void set_sys_argv(char *argv[], int argc, int start_arg) {
     for (int i = start_arg; i < argc; i++) {
         mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
     }

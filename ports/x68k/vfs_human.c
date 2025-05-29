@@ -54,7 +54,7 @@ typedef struct _mp_obj_vfs_human_t {
     bool readonly;
 } mp_obj_vfs_human_t;
 
-STATIC const char *vfs_human_get_path_str(mp_obj_vfs_human_t *self, mp_obj_t path) {
+static const char *vfs_human_get_path_str(mp_obj_vfs_human_t *self, mp_obj_t path) {
     if (self->root_len == 0) {
         return mp_obj_str_get_str(path);
     } else {
@@ -64,7 +64,7 @@ STATIC const char *vfs_human_get_path_str(mp_obj_vfs_human_t *self, mp_obj_t pat
     }
 }
 
-STATIC mp_obj_t vfs_human_get_path_obj(mp_obj_vfs_human_t *self, mp_obj_t path) {
+static mp_obj_t vfs_human_get_path_obj(mp_obj_vfs_human_t *self, mp_obj_t path) {
     if (self->root_len == 0) {
         return path;
     } else {
@@ -74,7 +74,7 @@ STATIC mp_obj_t vfs_human_get_path_obj(mp_obj_vfs_human_t *self, mp_obj_t path) 
     }
 }
 
-STATIC mp_obj_t vfs_human_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*f)(const char *)) {
+static mp_obj_t vfs_human_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*f)(const char *)) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     int ret = f(vfs_human_get_path_str(self, path_in));
     if (ret < 0) {
@@ -83,7 +83,7 @@ STATIC mp_obj_t vfs_human_fun1_helper(mp_obj_t self_in, mp_obj_t path_in, int (*
     return mp_const_none;
 }
 
-STATIC mp_import_stat_t mp_vfs_human_import_stat(void *self_in, const char *path) {
+static mp_import_stat_t mp_vfs_human_import_stat(void *self_in, const char *path) {
     mp_obj_vfs_human_t *self = self_in;
     if (self->root_len != 0) {
         self->root.len = self->root_len;
@@ -101,7 +101,7 @@ STATIC mp_import_stat_t mp_vfs_human_import_stat(void *self_in, const char *path
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-STATIC mp_obj_t vfs_human_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t vfs_human_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     mp_obj_vfs_human_t *vfs = mp_obj_malloc(mp_obj_vfs_human_t, type);
@@ -116,7 +116,7 @@ STATIC mp_obj_t vfs_human_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(vfs);
 }
 
-STATIC mp_obj_t vfs_human_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
+static mp_obj_t vfs_human_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     if (mp_obj_is_true(readonly)) {
         self->readonly = true;
@@ -126,15 +126,15 @@ STATIC mp_obj_t vfs_human_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mk
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_human_mount_obj, vfs_human_mount);
+static MP_DEFINE_CONST_FUN_OBJ_3(vfs_human_mount_obj, vfs_human_mount);
 
-STATIC mp_obj_t vfs_human_umount(mp_obj_t self_in) {
+static mp_obj_t vfs_human_umount(mp_obj_t self_in) {
     (void)self_in;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(vfs_human_umount_obj, vfs_human_umount);
+static MP_DEFINE_CONST_FUN_OBJ_1(vfs_human_umount_obj, vfs_human_umount);
 
-STATIC mp_obj_t vfs_human_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in) {
+static mp_obj_t vfs_human_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     const char *mode = mp_obj_str_get_str(mode_in);
     if (self->readonly
@@ -146,14 +146,14 @@ STATIC mp_obj_t vfs_human_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
     }
     return mp_vfs_human_file_open(&mp_type_vfs_human_textio, path_in, mode_in);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_human_open_obj, vfs_human_open);
+static MP_DEFINE_CONST_FUN_OBJ_3(vfs_human_open_obj, vfs_human_open);
 
-STATIC mp_obj_t vfs_human_chdir(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t vfs_human_chdir(mp_obj_t self_in, mp_obj_t path_in) {
     return vfs_human_fun1_helper(self_in, path_in, chdir);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_chdir_obj, vfs_human_chdir);
+static MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_chdir_obj, vfs_human_chdir);
 
-STATIC mp_obj_t vfs_human_getcwd(mp_obj_t self_in) {
+static mp_obj_t vfs_human_getcwd(mp_obj_t self_in) {
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
     int drv = _dos_curdrv();
     buf[0] = 'A' + drv;
@@ -177,7 +177,7 @@ STATIC mp_obj_t vfs_human_getcwd(mp_obj_t self_in) {
     }
     return mp_obj_new_str(buf, strlen(buf));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(vfs_human_getcwd_obj, vfs_human_getcwd);
+static MP_DEFINE_CONST_FUN_OBJ_1(vfs_human_getcwd_obj, vfs_human_getcwd);
 
 typedef struct _vfs_human_ilistdir_it_t {
     mp_obj_base_t base;
@@ -188,7 +188,7 @@ typedef struct _vfs_human_ilistdir_it_t {
     struct dos_filbuf fb;
 } vfs_human_ilistdir_it_t;
 
-STATIC mp_obj_t vfs_human_ilistdir_it_iternext(mp_obj_t self_in) {
+static mp_obj_t vfs_human_ilistdir_it_iternext(mp_obj_t self_in) {
     vfs_human_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
 
     for (;;) {
@@ -235,13 +235,13 @@ STATIC mp_obj_t vfs_human_ilistdir_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t vfs_human_ilistdir_it_del(mp_obj_t self_in) {
+static mp_obj_t vfs_human_ilistdir_it_del(mp_obj_t self_in) {
     vfs_human_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
     self->active = false;
     return mp_const_none;
 }
 
-STATIC mp_obj_t vfs_human_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t vfs_human_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     vfs_human_ilistdir_it_t *iter = m_new_obj_with_finaliser(vfs_human_ilistdir_it_t);
     iter->base.type = &mp_type_polymorph_iter_with_finaliser;
@@ -271,9 +271,9 @@ STATIC mp_obj_t vfs_human_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     }
     return MP_OBJ_FROM_PTR(iter);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_ilistdir_obj, vfs_human_ilistdir);
+static MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_ilistdir_obj, vfs_human_ilistdir);
 
-STATIC mp_obj_t vfs_human_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t vfs_human_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     const char *path = vfs_human_get_path_str(self, path_in);
     MP_THREAD_GIL_EXIT();
@@ -284,14 +284,14 @@ STATIC mp_obj_t vfs_human_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_mkdir_obj, vfs_human_mkdir);
+static MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_mkdir_obj, vfs_human_mkdir);
 
-STATIC mp_obj_t vfs_human_remove(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t vfs_human_remove(mp_obj_t self_in, mp_obj_t path_in) {
     return vfs_human_fun1_helper(self_in, path_in, unlink);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_remove_obj, vfs_human_remove);
+static MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_remove_obj, vfs_human_remove);
 
-STATIC mp_obj_t vfs_human_rename(mp_obj_t self_in, mp_obj_t old_path_in, mp_obj_t new_path_in) {
+static mp_obj_t vfs_human_rename(mp_obj_t self_in, mp_obj_t old_path_in, mp_obj_t new_path_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     const char *old_path = vfs_human_get_path_str(self, old_path_in);
     const char *new_path = vfs_human_get_path_str(self, new_path_in);
@@ -303,14 +303,14 @@ STATIC mp_obj_t vfs_human_rename(mp_obj_t self_in, mp_obj_t old_path_in, mp_obj_
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_human_rename_obj, vfs_human_rename);
+static MP_DEFINE_CONST_FUN_OBJ_3(vfs_human_rename_obj, vfs_human_rename);
 
-STATIC mp_obj_t vfs_human_rmdir(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t vfs_human_rmdir(mp_obj_t self_in, mp_obj_t path_in) {
     return vfs_human_fun1_helper(self_in, path_in, rmdir);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_rmdir_obj, vfs_human_rmdir);
+static MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_rmdir_obj, vfs_human_rmdir);
 
-STATIC mp_obj_t vfs_human_stat(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t vfs_human_stat(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     struct stat sb;
     const char *path = vfs_human_get_path_str(self, path_in);
@@ -332,11 +332,11 @@ STATIC mp_obj_t vfs_human_stat(mp_obj_t self_in, mp_obj_t path_in) {
     t->items[9] = mp_obj_new_int_from_uint(sb.st_ctime);
     return MP_OBJ_FROM_PTR(t);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_stat_obj, vfs_human_stat);
+static MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_stat_obj, vfs_human_stat);
 
 #if MICROPY_PY_UOS_STATVFS
 
-STATIC mp_obj_t vfs_human_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
+static mp_obj_t vfs_human_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_human_t *self = MP_OBJ_TO_PTR(self_in);
     struct dos_freeinf sb;
     const char *path = vfs_human_get_path_str(self, path_in);
@@ -363,11 +363,11 @@ STATIC mp_obj_t vfs_human_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
     t->items[9] = MP_OBJ_NEW_SMALL_INT(21);                 /* f_namemax */
     return MP_OBJ_FROM_PTR(t);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_statvfs_obj, vfs_human_statvfs);
+static MP_DEFINE_CONST_FUN_OBJ_2(vfs_human_statvfs_obj, vfs_human_statvfs);
 
 #endif
 
-STATIC const mp_rom_map_elem_t vfs_human_locals_dict_table[] = {
+static const mp_rom_map_elem_t vfs_human_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_human_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&vfs_human_umount_obj) },
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&vfs_human_open_obj) },
@@ -384,9 +384,9 @@ STATIC const mp_rom_map_elem_t vfs_human_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&vfs_human_statvfs_obj) },
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(vfs_human_locals_dict, vfs_human_locals_dict_table);
+static MP_DEFINE_CONST_DICT(vfs_human_locals_dict, vfs_human_locals_dict_table);
 
-STATIC const mp_vfs_proto_t vfs_human_proto = {
+static const mp_vfs_proto_t vfs_human_proto = {
     .import_stat = mp_vfs_human_import_stat,
 };
 

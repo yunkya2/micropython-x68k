@@ -28,7 +28,7 @@
 #include "py/obj.h"
 #include "modx68k.h"
 
-STATIC mp_obj_t x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_iocs(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_d0, ARG_d1, ARG_d2, ARG_d3, ARG_d4, ARG_d5,
            ARG_a1, ARG_a2, ARG_a1w, ARG_a2w, ARG_rd, ARG_ra };
     static const mp_arg_t allowed_args[] = {
@@ -117,7 +117,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(x68k_iocs_obj, 0, x68k_iocs);
 
 /****************************************************************************/
 
-STATIC const mp_rom_map_elem_t x68k_i_locals_dict_table[] = {
+static const mp_rom_map_elem_t x68k_i_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_B_KEYINP),    MP_ROM_INT(0x00) },
     { MP_ROM_QSTR(MP_QSTR_B_KEYSNS),    MP_ROM_INT(0x01) },
     { MP_ROM_QSTR(MP_QSTR_B_SFTSNS),    MP_ROM_INT(0x02) },
@@ -330,7 +330,7 @@ STATIC const mp_rom_map_elem_t x68k_i_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ABORTJOB),    MP_ROM_INT(0xff) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(x68k_i_locals_dict, x68k_i_locals_dict_table);
+static MP_DEFINE_CONST_DICT(x68k_i_locals_dict, x68k_i_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     x68k_i_obj_type,

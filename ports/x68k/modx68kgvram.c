@@ -35,7 +35,7 @@
 #include "py/binary.h"
 #include "modx68k.h"
 
-STATIC mp_obj_t x68k_vpage(const mp_obj_t arg_in) {
+static mp_obj_t x68k_vpage(const mp_obj_t arg_in) {
     mp_int_t page = mp_obj_get_int(arg_in);
     int res = _iocs_vpage(page);
     return MP_OBJ_NEW_SMALL_INT(res);
@@ -51,24 +51,24 @@ typedef struct _mp_obj_x68k_gvram_t {
     int page;
 } mp_obj_x68k_gvram_t;
 
-STATIC int current_page = -1;
+static int current_page = -1;
 
-STATIC void apage(mp_obj_x68k_gvram_t *self) {
+static void apage(mp_obj_x68k_gvram_t *self) {
     if (self->page != current_page) {
         _iocs_apage(self->page);
         current_page = self->page;
     }
 }
 
-STATIC mp_obj_t x68k_gvram_palet(mp_obj_t self_in, mp_obj_t arg1, mp_obj_t arg2) {
+static mp_obj_t x68k_gvram_palet(mp_obj_t self_in, mp_obj_t arg1, mp_obj_t arg2) {
     mp_int_t pal = mp_obj_get_int(arg1);
     mp_int_t col = mp_obj_get_int(arg2);
     mp_int_t res = _iocs_gpalet(pal, col);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(x68k_gvram_palet_obj, x68k_gvram_palet);
+static MP_DEFINE_CONST_FUN_OBJ_3(x68k_gvram_palet_obj, x68k_gvram_palet);
 
-STATIC mp_obj_t x68k_gvram_home(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_home(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y, ARG_all };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x,   MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -90,9 +90,9 @@ STATIC mp_obj_t x68k_gvram_home(size_t n_args, const mp_obj_t *pos_args, mp_map_
     int res = _iocs_home(page, args[ARG_x].u_int, args[ARG_y].u_int);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_home_obj, 1, x68k_gvram_home);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_home_obj, 1, x68k_gvram_home);
 
-STATIC mp_obj_t x68k_gvram_window(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_window(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x0, ARG_y0, ARG_x1, ARG_y1 };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x0,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -112,17 +112,17 @@ STATIC mp_obj_t x68k_gvram_window(size_t n_args, const mp_obj_t *pos_args, mp_ma
                            args[ARG_x1].u_int, args[ARG_y1].u_int);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_window_obj, 2, x68k_gvram_window);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_window_obj, 2, x68k_gvram_window);
 
-STATIC mp_obj_t x68k_gvram_wipe(mp_obj_t self_in) {
+static mp_obj_t x68k_gvram_wipe(mp_obj_t self_in) {
     mp_obj_x68k_gvram_t *self = MP_OBJ_TO_PTR(self_in);
     apage(self);
     int res = _iocs_wipe();
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(x68k_gvram_wipe_obj, x68k_gvram_wipe);
+static MP_DEFINE_CONST_FUN_OBJ_1(x68k_gvram_wipe_obj, x68k_gvram_wipe);
 
-STATIC mp_obj_t x68k_gvram_pset(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_pset(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y, ARG_c };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -144,9 +144,9 @@ STATIC mp_obj_t x68k_gvram_pset(size_t n_args, const mp_obj_t *pos_args, mp_map_
     int res = _iocs_pset(&p);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_pset_obj, 1, x68k_gvram_pset);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_pset_obj, 1, x68k_gvram_pset);
 
-STATIC mp_obj_t x68k_gvram_point(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_point(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -171,9 +171,9 @@ STATIC mp_obj_t x68k_gvram_point(size_t n_args, const mp_obj_t *pos_args, mp_map
         return MP_OBJ_NEW_SMALL_INT(p.color);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_point_obj, 1, x68k_gvram_point);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_point_obj, 1, x68k_gvram_point);
 
-STATIC mp_obj_t x68k_gvram_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x0, ARG_y0, ARG_x1, ARG_y1, ARG_c, ARG_style };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x0,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -199,9 +199,9 @@ STATIC mp_obj_t x68k_gvram_line(size_t n_args, const mp_obj_t *pos_args, mp_map_
     int res = _iocs_line(&p);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_line_obj, 1, x68k_gvram_line);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_line_obj, 1, x68k_gvram_line);
 
-STATIC mp_obj_t x68k_gvram_box(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_box(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x0, ARG_y0, ARG_x1, ARG_y1, ARG_c, ARG_style };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x0,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -227,9 +227,9 @@ STATIC mp_obj_t x68k_gvram_box(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     int res = _iocs_box(&p);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_box_obj, 1, x68k_gvram_box);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_box_obj, 1, x68k_gvram_box);
 
-STATIC mp_obj_t x68k_gvram_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x0, ARG_y0, ARG_x1, ARG_y1, ARG_c };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x0,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -254,9 +254,9 @@ STATIC mp_obj_t x68k_gvram_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_
     int res = _iocs_fill(&p);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_fill_obj, 1, x68k_gvram_fill);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_fill_obj, 1, x68k_gvram_fill);
 
-STATIC mp_obj_t x68k_gvram_circle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_circle(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y, ARG_r, ARG_c, ARG_start, ARG_end, ARG_ratio };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -284,9 +284,9 @@ STATIC mp_obj_t x68k_gvram_circle(size_t n_args, const mp_obj_t *pos_args, mp_ma
     int res = _iocs_circle(&p);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_circle_obj, 1, x68k_gvram_circle);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_circle_obj, 1, x68k_gvram_circle);
 
-STATIC mp_obj_t x68k_gvram_paint(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_paint(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y, ARG_c, ARG_buf };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x,   MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -323,9 +323,9 @@ STATIC mp_obj_t x68k_gvram_paint(size_t n_args, const mp_obj_t *pos_args, mp_map
     int res = _iocs_paint(&p);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_paint_obj, 1, x68k_gvram_paint);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_paint_obj, 1, x68k_gvram_paint);
 
-STATIC mp_obj_t x68k_gvram_symbol(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_symbol(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y, ARG_str, ARG_xmag, ARG_ymag, ARG_c, ARG_ftype, ARG_angle };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -354,9 +354,9 @@ STATIC mp_obj_t x68k_gvram_symbol(size_t n_args, const mp_obj_t *pos_args, mp_ma
     int res = _iocs_symbol(&p);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_symbol_obj, 1, x68k_gvram_symbol);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_symbol_obj, 1, x68k_gvram_symbol);
 
-STATIC mp_obj_t x68k_gvram_get(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_get(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x0, ARG_y0, ARG_x1, ARG_y1, ARG_buf };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x0,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -387,9 +387,9 @@ STATIC mp_obj_t x68k_gvram_get(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     int res = _iocs_getgrm(&p);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_get_obj, 1, x68k_gvram_get);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_get_obj, 1, x68k_gvram_get);
 
-STATIC mp_obj_t x68k_gvram_put(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_gvram_put(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x0, ARG_y0, ARG_x1, ARG_y1, ARG_buf };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x0,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -420,9 +420,9 @@ STATIC mp_obj_t x68k_gvram_put(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     int res = _iocs_putgrm(&p);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_put_obj, 1, x68k_gvram_put);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_gvram_put_obj, 1, x68k_gvram_put);
 
-STATIC mp_obj_t x68k_gvram_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t x68k_gvram_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     mp_obj_x68k_gvram_t *o = mp_obj_malloc(mp_obj_x68k_gvram_t, type);
@@ -441,7 +441,7 @@ STATIC mp_obj_t x68k_gvram_make_new(const mp_obj_type_t *type, size_t n_args, si
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t x68k_gvram_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
+static mp_obj_t x68k_gvram_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_x68k_gvram_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_LEN:
@@ -454,7 +454,7 @@ STATIC mp_obj_t x68k_gvram_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t x68k_gvram_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+static mp_obj_t x68k_gvram_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete
         return MP_OBJ_NULL; // op not supported
@@ -475,7 +475,7 @@ STATIC mp_obj_t x68k_gvram_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t 
     return MP_OBJ_NULL;
 }
 
-STATIC mp_int_t x68k_gvram_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+static mp_int_t x68k_gvram_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     (void)flags;
     if (x68k_super_mode) {
         mp_obj_x68k_gvram_t *self = MP_OBJ_TO_PTR(self_in);
@@ -486,7 +486,7 @@ STATIC mp_int_t x68k_gvram_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinf
     return 0;
 }
 
-STATIC const mp_rom_map_elem_t x68k_gvram_locals_dict_table[] = {
+static const mp_rom_map_elem_t x68k_gvram_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_palet),  MP_ROM_PTR(&x68k_gvram_palet_obj) },
     { MP_ROM_QSTR(MP_QSTR_home),   MP_ROM_PTR(&x68k_gvram_home_obj) },
     { MP_ROM_QSTR(MP_QSTR_window), MP_ROM_PTR(&x68k_gvram_window_obj) },
@@ -502,7 +502,7 @@ STATIC const mp_rom_map_elem_t x68k_gvram_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get),    MP_ROM_PTR(&x68k_gvram_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_put),    MP_ROM_PTR(&x68k_gvram_put_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(x68k_gvram_locals_dict, x68k_gvram_locals_dict_table);
+static MP_DEFINE_CONST_DICT(x68k_gvram_locals_dict, x68k_gvram_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     x68k_type_gvram,

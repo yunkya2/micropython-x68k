@@ -59,13 +59,13 @@ struct _emit_inline_asm_t {
     qstr *label_lookup;
 };
 
-STATIC void emit_inline_m68k_error_msg(emit_inline_asm_t *emit, mp_rom_error_text_t msg) {
+static void emit_inline_m68k_error_msg(emit_inline_asm_t *emit, mp_rom_error_text_t msg) {
     if (*emit->error_slot == MP_OBJ_NULL) {
         *emit->error_slot = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
     }
 }
 
-STATIC void emit_inline_m68k_error_exc(emit_inline_asm_t *emit, mp_obj_t exc) {
+static void emit_inline_m68k_error_exc(emit_inline_asm_t *emit, mp_obj_t exc) {
     if (*emit->error_slot == MP_OBJ_NULL) {
         *emit->error_slot = exc;
     }
@@ -87,7 +87,7 @@ void emit_inline_m68k_free(emit_inline_asm_t *emit) {
     m_del_obj(emit_inline_asm_t, emit);
 }
 
-STATIC void emit_inline_m68k_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot) {
+static void emit_inline_m68k_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot) {
     emit->pass = pass;
     emit->error_slot = error_slot;
     if (emit->pass == MP_PASS_CODE_SIZE) {
@@ -97,16 +97,16 @@ STATIC void emit_inline_m68k_start_pass(emit_inline_asm_t *emit, pass_kind_t pas
     asm_m68k_entry(&emit->as, 0);
 }
 
-STATIC void emit_inline_m68k_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
+static void emit_inline_m68k_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
     asm_m68k_exit(&emit->as);
     asm_m68k_end_pass(&emit->as);
 }
 
-STATIC mp_uint_t emit_inline_m68k_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
+static mp_uint_t emit_inline_m68k_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
     return n_params;
 }
 
-STATIC bool emit_inline_m68k_label(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id) {
+static bool emit_inline_m68k_label(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id) {
     assert(label_num < emit->max_num_labels);
     if (emit->pass == MP_PASS_CODE_SIZE) {
         // check for duplicate label on first pass
@@ -126,7 +126,7 @@ STATIC bool emit_inline_m68k_label(emit_inline_asm_t *emit, mp_uint_t label_num,
 typedef struct _reg_name_t { byte reg;
                              qstr name; }
 reg_name_t;
-STATIC const reg_name_t reg_name_table[] = {
+static const reg_name_t reg_name_table[] = {
     {0,  MP_QSTR_d0},
     {1,  MP_QSTR_d1},
     {2,  MP_QSTR_d2},
@@ -154,7 +154,7 @@ STATIC const reg_name_t reg_name_table[] = {
     {19, MP_QSTR_usp},
 };
 
-STATIC mp_uint_t get_reg(mp_parse_node_t pn) {
+static mp_uint_t get_reg(mp_parse_node_t pn) {
     for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
         qstr qst = MP_PARSE_NODE_LEAF_ARG(pn);
         if (qst == reg_name_table[i].name) {
@@ -167,7 +167,7 @@ STATIC mp_uint_t get_reg(mp_parse_node_t pn) {
 typedef struct _cc_name_t { byte cc;
                             const char *name; }
 cc_name_t;
-STATIC const cc_name_t cc_name_table[] = {
+static const cc_name_t cc_name_table[] = {
     { 0x0, "t" },
     { 0x1, "f" },
     { 0x2, "hi" },
@@ -190,7 +190,7 @@ STATIC const cc_name_t cc_name_table[] = {
     { 0xf, "le" },
 };
 
-STATIC mp_uint_t get_cc(const char **strp) {
+static mp_uint_t get_cc(const char **strp) {
     for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(cc_name_table); i++) {
         const char *cc = cc_name_table[i].name;
         int len = strlen(cc);
@@ -202,7 +202,7 @@ STATIC mp_uint_t get_cc(const char **strp) {
     return -1;
 }
 
-STATIC const char *get_arg_str(mp_parse_node_t pn) {
+static const char *get_arg_str(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_ID(pn)) {
         qstr qst = MP_PARSE_NODE_LEAF_ARG(pn);
         return qstr_str(qst);
@@ -211,7 +211,7 @@ STATIC const char *get_arg_str(mp_parse_node_t pn) {
     }
 }
 
-STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+static int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     if (!MP_PARSE_NODE_IS_ID(pn)) {
         emit_inline_m68k_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects a label"), op));
         return 0;
@@ -229,25 +229,25 @@ STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     return 0;
 }
 
-STATIC void check_value_range(emit_inline_asm_t *emit, uint32_t data, int32_t min, int32_t max) {
+static void check_value_range(emit_inline_asm_t *emit, uint32_t data, int32_t min, int32_t max) {
     if (!((int32_t)data >= min && (int32_t)data <= max)) {
         emit_inline_m68k_error_msg(emit, MP_ERROR_TEXT("illegal value range"));
     }
 }
 
-STATIC void check_byte_range(emit_inline_asm_t *emit, uint32_t data) {
+static void check_byte_range(emit_inline_asm_t *emit, uint32_t data) {
     check_value_range(emit, data, -0x80, 0xff);
 }
 
-STATIC void check_word_range(emit_inline_asm_t *emit, uint32_t data) {
+static void check_word_range(emit_inline_asm_t *emit, uint32_t data) {
     check_value_range(emit, data, -0x8000, 0xffff);
 }
 
-STATIC void check_sbyte_range(emit_inline_asm_t *emit, uint32_t data) {
+static void check_sbyte_range(emit_inline_asm_t *emit, uint32_t data) {
     check_value_range(emit, data, -0x80, 0x7f);
 }
 
-STATIC void check_sword_range(emit_inline_asm_t *emit, uint32_t data) {
+static void check_sword_range(emit_inline_asm_t *emit, uint32_t data) {
     check_value_range(emit, data, -0x8000, 0x7fff);
 }
 
@@ -769,7 +769,7 @@ m68k_instr_table_t inst_table[] = {
     { "rtr",      0,      0x4e77,   IN_NOOPR,   0,              0 },
 };
 
-STATIC int emit_inline_m68k_data(emit_inline_asm_t *emit, int size, int opr, uint32_t data) {
+static int emit_inline_m68k_data(emit_inline_asm_t *emit, int size, int opr, uint32_t data) {
     if (opr == OR_SIZE) {
         if (size == 0) {
             check_byte_range(emit, data);
@@ -785,7 +785,7 @@ STATIC int emit_inline_m68k_data(emit_inline_asm_t *emit, int size, int opr, uin
     return 0;
 }
 
-STATIC void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
+static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     size_t op_len;
     const char *op_str = (const char *)qstr_data(op, &op_len);
     unsigned int i;

@@ -67,7 +67,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_dos_obj, 1, 2, x68k_dos);
 
 /****************************************************************************/
 
-STATIC const mp_rom_map_elem_t x68k_d_locals_dict_table[] = {
+static const mp_rom_map_elem_t x68k_d_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_EXIT),        MP_ROM_INT(0xff00) },
     { MP_ROM_QSTR(MP_QSTR_GETCHAR),     MP_ROM_INT(0xff01) },
     { MP_ROM_QSTR(MP_QSTR_PUTCHAR),     MP_ROM_INT(0xff02) },
@@ -181,7 +181,7 @@ STATIC const mp_rom_map_elem_t x68k_d_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_CHANGE_PR),   MP_ROM_INT(0xffff) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(x68k_d_locals_dict, x68k_d_locals_dict_table);
+static MP_DEFINE_CONST_DICT(x68k_d_locals_dict, x68k_d_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     x68k_d_obj_type,

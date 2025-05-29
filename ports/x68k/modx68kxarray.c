@@ -40,11 +40,11 @@
 
 #define TYPECODE_MASK (0x7f)
 
-STATIC mp_obj_t xarray_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_buf);
+static mp_obj_t xarray_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_buf);
 
 /******************************************************************************/
 
-STATIC void xarray_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+static void xarray_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_x68k_xarray_t *o = MP_OBJ_TO_PTR(o_in);
     mp_printf(print, "xarray('%c'", o->typecode);
@@ -79,7 +79,7 @@ STATIC void xarray_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     mp_print_str(print, ")");
 }
 
-STATIC mp_obj_x68k_xarray_t *xarray_new(char typecode, size_t dim1, size_t dim2) {
+static mp_obj_x68k_xarray_t *xarray_new(char typecode, size_t dim1, size_t dim2) {
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     mp_obj_x68k_xarray_t *o = m_new_obj(mp_obj_x68k_xarray_t);
     o->base.type = &x68k_type_xarray;
@@ -107,7 +107,7 @@ STATIC mp_obj_x68k_xarray_t *xarray_new(char typecode, size_t dim1, size_t dim2)
     return o;
 }
 
-STATIC mp_obj_t xarray_construct(char typecode, size_t dim1, size_t dim2, mp_obj_t initializer) {
+static mp_obj_t xarray_construct(char typecode, size_t dim1, size_t dim2, mp_obj_t initializer) {
     mp_buffer_info_t bufinfo;
     mp_obj_x68k_xarray_t *o = NULL;
 
@@ -177,7 +177,7 @@ STATIC mp_obj_t xarray_construct(char typecode, size_t dim1, size_t dim2, mp_obj
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t xarray_make_new_main(char typecode, size_t n_args, const mp_obj_t *args) {
+static mp_obj_t xarray_make_new_main(char typecode, size_t n_args, const mp_obj_t *args) {
     switch (n_args) {
         case 0:     // xarray(type)
             return MP_OBJ_FROM_PTR(xarray_new(typecode, 1, 0));
@@ -208,7 +208,7 @@ STATIC mp_obj_t xarray_make_new_main(char typecode, size_t n_args, const mp_obj_
     return mp_const_none;
 }
 
-STATIC mp_obj_t xarray_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t xarray_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
     mp_arg_check_num(n_args, n_kw, 1, 4, false);
 
@@ -217,22 +217,22 @@ STATIC mp_obj_t xarray_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
     return xarray_make_new_main(*typecode, n_args - 1, args + 1);
 }
 
-STATIC mp_obj_t x68k_xarray_char(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_xarray_char(size_t n_args, const mp_obj_t *args) {
     return xarray_make_new_main('B', n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_xarray_char_obj, 0, 3, x68k_xarray_char);
 
-STATIC mp_obj_t x68k_xarray_int(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_xarray_int(size_t n_args, const mp_obj_t *args) {
     return xarray_make_new_main('l', n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_xarray_int_obj, 0, 3, x68k_xarray_int);
 
-STATIC mp_obj_t x68k_xarray_float(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_xarray_float(size_t n_args, const mp_obj_t *args) {
     return xarray_make_new_main('d', n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_xarray_float_obj, 0, 3, x68k_xarray_float);
 
-STATIC mp_obj_t xarray_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
+static mp_obj_t xarray_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_x68k_xarray_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_LEN:
@@ -242,7 +242,7 @@ STATIC mp_obj_t xarray_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t xarray_get_val(mp_obj_x68k_xarray_t *o, size_t index) {
+static mp_obj_t xarray_get_val(mp_obj_x68k_xarray_t *o, size_t index) {
     if (xarray_dim(o) > 1) {
         // create new array object pointing to single column
         index *= xarray_sub2(o);
@@ -261,7 +261,7 @@ STATIC mp_obj_t xarray_get_val(mp_obj_x68k_xarray_t *o, size_t index) {
     }
 }
 
-STATIC mp_obj_t xarray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+static mp_obj_t xarray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item
         return MP_OBJ_NULL; // op not supported
@@ -288,7 +288,7 @@ STATIC mp_obj_t xarray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t valu
     }
 }
 
-STATIC mp_int_t xarray_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+static mp_int_t xarray_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     mp_obj_x68k_xarray_t *o = MP_OBJ_TO_PTR(o_in);
     size_t sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
     bufinfo->buf = o->items;
@@ -298,7 +298,7 @@ STATIC mp_int_t xarray_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_u
     return 0;
 }
 
-STATIC mp_obj_t xarray_shape(mp_obj_t o_in) {
+static mp_obj_t xarray_shape(mp_obj_t o_in) {
     mp_obj_x68k_xarray_t *o = MP_OBJ_TO_PTR(o_in);
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(o->dim, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(xarray_sub1(o));
@@ -307,9 +307,9 @@ STATIC mp_obj_t xarray_shape(mp_obj_t o_in) {
     }
     return MP_OBJ_FROM_PTR(t);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(xarray_shape_obj, xarray_shape);
+static MP_DEFINE_CONST_FUN_OBJ_1(xarray_shape_obj, xarray_shape);
 
-STATIC mp_obj_t xarray_list(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t xarray_list(size_t n_args, const mp_obj_t *args) {
     mp_obj_x68k_xarray_t *o = MP_OBJ_TO_PTR(args[0]);
     mp_obj_list_t *l = m_new_obj(mp_obj_list_t);
     if (xarray_dim(o) == 1 || (n_args > 1 && mp_obj_is_true(args[1]))) {
@@ -332,13 +332,13 @@ STATIC mp_obj_t xarray_list(size_t n_args, const mp_obj_t *args) {
     }
     return MP_OBJ_FROM_PTR(l);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(xarray_list_obj, 1, 2, xarray_list);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(xarray_list_obj, 1, 2, xarray_list);
 
-STATIC const mp_rom_map_elem_t xarray_locals_dict_table[] = {
+static const mp_rom_map_elem_t xarray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_shape), MP_ROM_PTR(&xarray_shape_obj) },
     { MP_ROM_QSTR(MP_QSTR_list), MP_ROM_PTR(&xarray_list_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(xarray_locals_dict, xarray_locals_dict_table);
+static MP_DEFINE_CONST_DICT(xarray_locals_dict, xarray_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     x68k_type_xarray,
@@ -362,7 +362,7 @@ typedef struct _mp_obj_xarray_it_t {
     size_t cur;
 } mp_obj_xarray_it_t;
 
-STATIC mp_obj_t xarray_it_iternext(mp_obj_t self_in) {
+static mp_obj_t xarray_it_iternext(mp_obj_t self_in) {
     mp_obj_xarray_it_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->cur < self->xarray->len) {
         mp_obj_t res = xarray_get_val(self->xarray, self->cur++);
@@ -376,14 +376,14 @@ STATIC mp_obj_t xarray_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     x68k_type_xarray_it,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     iter, xarray_it_iternext
     );
 
-STATIC mp_obj_t xarray_iterator_new(mp_obj_t xarray_in, mp_obj_iter_buf_t *iter_buf) {
+static mp_obj_t xarray_iterator_new(mp_obj_t xarray_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_xarray_it_t) <= sizeof(mp_obj_iter_buf_t));
     mp_obj_x68k_xarray_t *xarray = MP_OBJ_TO_PTR(xarray_in);
     mp_obj_xarray_it_t *o = (mp_obj_xarray_it_t *)iter_buf;

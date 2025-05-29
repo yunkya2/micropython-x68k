@@ -92,7 +92,7 @@ static x68k_fnc_info_t *xfnc_list = NULL;
 
 /****************************************************************************/
 
-STATIC mp_obj_t x68k_callfncentry(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_callfncentry(size_t n_args, const mp_obj_t *args) {
     mp_obj_fun_x68kfnc_t *self = (mp_obj_fun_x68kfnc_t *)(x68kfnc_t_addr - 14);
     uint16_t parmid;        // Parameter ID
     uint16_t *fncarg;       // Function arguments top address
@@ -245,7 +245,7 @@ STATIC mp_obj_t x68k_callfncentry(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t x68k_loadfnc(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_loadfnc(size_t n_args, const mp_obj_t *args) {
     const char *fname = mp_obj_str_get_str(args[0]);
     bool loadhigh = true;
     int res;

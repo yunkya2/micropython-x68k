@@ -41,23 +41,23 @@ typedef struct _mp_obj_x68k_tvram_t {
     int len;
 } mp_obj_x68k_tvram_t;
 
-STATIC mp_obj_t x68k_tvram_palet(mp_obj_t self_in, mp_obj_t arg1, mp_obj_t arg2) {
+static mp_obj_t x68k_tvram_palet(mp_obj_t self_in, mp_obj_t arg1, mp_obj_t arg2) {
     mp_int_t pal = mp_obj_get_int(arg1);
     mp_int_t col = mp_obj_get_int(arg2);
     _iocs_tpalet(pal, col);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(x68k_tvram_palet_obj, x68k_tvram_palet);
+static MP_DEFINE_CONST_FUN_OBJ_3(x68k_tvram_palet_obj, x68k_tvram_palet);
 
-STATIC mp_obj_t x68k_tvram_palet2(mp_obj_t self_in, mp_obj_t arg1, mp_obj_t arg2) {
+static mp_obj_t x68k_tvram_palet2(mp_obj_t self_in, mp_obj_t arg1, mp_obj_t arg2) {
     mp_int_t pal = mp_obj_get_int(arg1);
     mp_int_t col = mp_obj_get_int(arg2);
     _iocs_tpalet2(pal, col);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(x68k_tvram_palet2_obj, x68k_tvram_palet2);
+static MP_DEFINE_CONST_FUN_OBJ_3(x68k_tvram_palet2_obj, x68k_tvram_palet2);
 
-STATIC mp_obj_t x68k_tvram_xline(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_xline(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_plane, ARG_x, ARG_y, ARG_len, ARG_style };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_plane,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -79,9 +79,9 @@ STATIC mp_obj_t x68k_tvram_xline(size_t n_args, const mp_obj_t *pos_args, mp_map
     _iocs_txxline(&p);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_xline_obj, 1, x68k_tvram_xline);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_xline_obj, 1, x68k_tvram_xline);
 
-STATIC mp_obj_t x68k_tvram_yline(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_yline(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_plane, ARG_x, ARG_y, ARG_len, ARG_style };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_plane,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -103,9 +103,9 @@ STATIC mp_obj_t x68k_tvram_yline(size_t n_args, const mp_obj_t *pos_args, mp_map
     _iocs_txyline(&p);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_yline_obj, 1, x68k_tvram_yline);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_yline_obj, 1, x68k_tvram_yline);
 
-STATIC mp_obj_t x68k_tvram_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_line(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_plane, ARG_x, ARG_y, ARG_w, ARG_h, ARG_style };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_plane,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -129,9 +129,9 @@ STATIC mp_obj_t x68k_tvram_line(size_t n_args, const mp_obj_t *pos_args, mp_map_
     _iocs_txline(&p);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_line_obj, 1, x68k_tvram_line);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_line_obj, 1, x68k_tvram_line);
 
-STATIC mp_obj_t x68k_tvram_box(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_box(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_plane, ARG_x, ARG_y, ARG_w, ARG_h, ARG_style };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_plane,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -155,9 +155,9 @@ STATIC mp_obj_t x68k_tvram_box(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     _iocs_txbox(&p);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_box_obj, 1, x68k_tvram_box);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_box_obj, 1, x68k_tvram_box);
 
-STATIC mp_obj_t x68k_tvram_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_plane, ARG_x, ARG_y, ARG_w, ARG_h, ARG_style };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_plane,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -181,9 +181,9 @@ STATIC mp_obj_t x68k_tvram_fill(size_t n_args, const mp_obj_t *pos_args, mp_map_
     _iocs_txfill(&p);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_fill_obj, 1, x68k_tvram_fill);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_fill_obj, 1, x68k_tvram_fill);
 
-STATIC mp_obj_t x68k_tvram_rev(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_rev(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_plane, ARG_x, ARG_y, ARG_w, ARG_h };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_plane,  MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -205,9 +205,9 @@ STATIC mp_obj_t x68k_tvram_rev(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     _iocs_txrev(&p);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_rev_obj, 1, x68k_tvram_rev);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_rev_obj, 1, x68k_tvram_rev);
 
-STATIC mp_obj_t x68k_tvram_rascpy(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_rascpy(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_src, ARG_dst, ARG_n, ARG_dir, ARG_plane };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_src,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -226,16 +226,16 @@ STATIC mp_obj_t x68k_tvram_rascpy(size_t n_args, const mp_obj_t *pos_args, mp_ma
                    (args[ARG_dir].u_int >=0 ? 0 : 0xff) << 8 | args[ARG_plane].u_int);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_rascpy_obj, 1, x68k_tvram_rascpy);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_rascpy_obj, 1, x68k_tvram_rascpy);
 
-STATIC mp_obj_t x68k_tvram_color(mp_obj_t self_in, const mp_obj_t arg_in) {
+static mp_obj_t x68k_tvram_color(mp_obj_t self_in, const mp_obj_t arg_in) {
     mp_int_t plane = mp_obj_get_int(arg_in);
     _iocs_tcolor(plane);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(x68k_tvram_color_obj, x68k_tvram_color);
+static MP_DEFINE_CONST_FUN_OBJ_2(x68k_tvram_color_obj, x68k_tvram_color);
 
-STATIC mp_obj_t x68k_tvram_get(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_get(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y, ARG_buf };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x,   MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -253,9 +253,9 @@ STATIC mp_obj_t x68k_tvram_get(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     _iocs_textget(args[ARG_x].u_int, args[ARG_y].u_int, bufinfo.buf);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_get_obj, 1, x68k_tvram_get);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_get_obj, 1, x68k_tvram_get);
 
-STATIC mp_obj_t x68k_tvram_put(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_put(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y, ARG_buf };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x,   MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -273,9 +273,9 @@ STATIC mp_obj_t x68k_tvram_put(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     _iocs_textput(args[ARG_x].u_int, args[ARG_y].u_int, bufinfo.buf);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_put_obj, 1, x68k_tvram_put);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_put_obj, 1, x68k_tvram_put);
 
-STATIC mp_obj_t x68k_tvram_clipput(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t x68k_tvram_clipput(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_x, ARG_y, ARG_buf, ARG_clip };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -307,9 +307,9 @@ STATIC mp_obj_t x68k_tvram_clipput(size_t n_args, const mp_obj_t *pos_args, mp_m
     _iocs_clipput(args[ARG_x].u_int, args[ARG_y].u_int, bufinfo.buf, &clip);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_clipput_obj, 1, x68k_tvram_clipput);
+static MP_DEFINE_CONST_FUN_OBJ_KW(x68k_tvram_clipput_obj, 1, x68k_tvram_clipput);
 
-STATIC mp_obj_t x68k_tvram_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t x68k_tvram_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     mp_obj_x68k_tvram_t *o = mp_obj_malloc(mp_obj_x68k_tvram_t, type);
@@ -318,7 +318,7 @@ STATIC mp_obj_t x68k_tvram_make_new(const mp_obj_type_t *type, size_t n_args, si
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t x68k_tvram_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
+static mp_obj_t x68k_tvram_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_x68k_tvram_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_LEN:
@@ -331,7 +331,7 @@ STATIC mp_obj_t x68k_tvram_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t x68k_tvram_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+static mp_obj_t x68k_tvram_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete
         return MP_OBJ_NULL; // op not supported
@@ -352,7 +352,7 @@ STATIC mp_obj_t x68k_tvram_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t 
     return MP_OBJ_NULL;
 }
 
-STATIC mp_int_t x68k_tvram_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+static mp_int_t x68k_tvram_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     (void)flags;
     if (x68k_super_mode) {
         mp_obj_x68k_tvram_t *self = MP_OBJ_TO_PTR(self_in);
@@ -363,7 +363,7 @@ STATIC mp_int_t x68k_tvram_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinf
     return 0;
 }
 
-STATIC const mp_rom_map_elem_t x68k_tvram_locals_dict_table[] = {
+static const mp_rom_map_elem_t x68k_tvram_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_palet),   MP_ROM_PTR(&x68k_tvram_palet_obj) },
     { MP_ROM_QSTR(MP_QSTR_palet2),  MP_ROM_PTR(&x68k_tvram_palet2_obj) },
     { MP_ROM_QSTR(MP_QSTR_xline),   MP_ROM_PTR(&x68k_tvram_xline_obj) },
@@ -378,7 +378,7 @@ STATIC const mp_rom_map_elem_t x68k_tvram_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_put),     MP_ROM_PTR(&x68k_tvram_put_obj) },
     { MP_ROM_QSTR(MP_QSTR_clipput), MP_ROM_PTR(&x68k_tvram_clipput_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(x68k_tvram_locals_dict, x68k_tvram_locals_dict_table);
+static MP_DEFINE_CONST_DICT(x68k_tvram_locals_dict, x68k_tvram_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     x68k_type_tvram,

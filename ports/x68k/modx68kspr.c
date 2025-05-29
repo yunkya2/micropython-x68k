@@ -41,13 +41,13 @@ typedef struct _mp_obj_x68k_sprite_t {
     int len;
 } mp_obj_x68k_sprite_t;
 
-STATIC mp_obj_t x68k_spr_init(mp_obj_t self_in) {
+static mp_obj_t x68k_spr_init(mp_obj_t self_in) {
     mp_int_t res = _iocs_sp_init();
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(x68k_spr_init_obj, x68k_spr_init);
+static MP_DEFINE_CONST_FUN_OBJ_1(x68k_spr_init_obj, x68k_spr_init);
 
-STATIC mp_obj_t x68k_spr_disp(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_spr_disp(size_t n_args, const mp_obj_t *args) {
     bool onoff = true;
     mp_int_t res = 0;
     if (n_args == 2) {
@@ -60,9 +60,9 @@ STATIC mp_obj_t x68k_spr_disp(size_t n_args, const mp_obj_t *args) {
     }
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_disp_obj, 1, 2, x68k_spr_disp);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_disp_obj, 1, 2, x68k_spr_disp);
 
-STATIC mp_obj_t x68k_spr_clr(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_spr_clr(size_t n_args, const mp_obj_t *args) {
     mp_int_t from = 0, to = 255;
     mp_int_t i;
     mp_int_t res = 0;
@@ -81,7 +81,7 @@ STATIC mp_obj_t x68k_spr_clr(size_t n_args, const mp_obj_t *args) {
     }
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_clr_obj, 1, 3, x68k_spr_clr);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_clr_obj, 1, 3, x68k_spr_clr);
 
 mp_obj_t x68k_spr_defcg(size_t n_args, const mp_obj_t *args) {
     uint8_t tmp[128];
@@ -108,9 +108,9 @@ mp_obj_t x68k_spr_defcg(size_t n_args, const mp_obj_t *args) {
     res = _iocs_sp_defcg(code, (size != 0), pat);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_defcg_obj, 3, 4, x68k_spr_defcg);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_defcg_obj, 3, 4, x68k_spr_defcg);
 
-STATIC mp_obj_t x68k_spr_set(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_spr_set(size_t n_args, const mp_obj_t *args) {
     mp_int_t plane = mp_obj_get_int(args[1]);
     mp_int_t res;
     if (n_args < 6) {
@@ -129,9 +129,9 @@ STATIC mp_obj_t x68k_spr_set(size_t n_args, const mp_obj_t *args) {
     res = _iocs_sp_regst(plane, vsync ? 0 : -1, x, y, code, prio);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_set_obj, 2, 7, x68k_spr_set);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_set_obj, 2, 7, x68k_spr_set);
 
-STATIC mp_obj_t x68k_spr_palet(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_spr_palet(size_t n_args, const mp_obj_t *args) {
     mp_int_t p = mp_obj_get_int(args[1]);
     mp_int_t pb = 1;
     bool vsync = true;
@@ -161,9 +161,9 @@ STATIC mp_obj_t x68k_spr_palet(size_t n_args, const mp_obj_t *args) {
     }
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_palet_obj, 3, 5, x68k_spr_palet);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_palet_obj, 3, 5, x68k_spr_palet);
 
-STATIC mp_obj_t x68k_spr_bgdisp(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_spr_bgdisp(size_t n_args, const mp_obj_t *args) {
     mp_int_t bg = mp_obj_get_int(args[1]);
     mp_int_t text = 0;
     mp_int_t disp = 1;
@@ -177,17 +177,17 @@ STATIC mp_obj_t x68k_spr_bgdisp(size_t n_args, const mp_obj_t *args) {
     mp_int_t res = _iocs_bgctrlst(bg, text, disp);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgdisp_obj, 2, 4, x68k_spr_bgdisp);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgdisp_obj, 2, 4, x68k_spr_bgdisp);
 
-STATIC mp_obj_t x68k_spr_bgfill(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_spr_bgfill(size_t n_args, const mp_obj_t *args) {
     mp_int_t text = mp_obj_get_int(args[1]);
     mp_int_t code = mp_obj_get_int(args[2]);
     mp_int_t res = _iocs_bgtextcl(text, code);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgfill_obj, 3, 3, x68k_spr_bgfill);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgfill_obj, 3, 3, x68k_spr_bgfill);
 
-STATIC mp_obj_t x68k_spr_bgset(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_spr_bgset(size_t n_args, const mp_obj_t *args) {
     mp_int_t text = mp_obj_get_int(args[1]);
     mp_int_t x = mp_obj_get_int(args[2]);
     mp_int_t y = mp_obj_get_int(args[3]);
@@ -195,18 +195,18 @@ STATIC mp_obj_t x68k_spr_bgset(size_t n_args, const mp_obj_t *args) {
     mp_int_t res = _iocs_bgtextst(text, x, y, code);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgset_obj, 5, 5, x68k_spr_bgset);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgset_obj, 5, 5, x68k_spr_bgset);
 
-STATIC mp_obj_t x68k_spr_bgget(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_spr_bgget(size_t n_args, const mp_obj_t *args) {
     mp_int_t text = mp_obj_get_int(args[1]);
     mp_int_t x = mp_obj_get_int(args[2]);
     mp_int_t y = mp_obj_get_int(args[3]);
     mp_int_t res = _iocs_bgtextgt(text, x, y);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgget_obj, 4, 4, x68k_spr_bgget);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgget_obj, 4, 4, x68k_spr_bgget);
 
-STATIC mp_obj_t x68k_spr_bgscroll(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t x68k_spr_bgscroll(size_t n_args, const mp_obj_t *args) {
     mp_int_t bg = mp_obj_get_int(args[1]);
     mp_int_t x = mp_obj_get_int(args[2]);
     mp_int_t y = mp_obj_get_int(args[3]);
@@ -218,9 +218,9 @@ STATIC mp_obj_t x68k_spr_bgscroll(size_t n_args, const mp_obj_t *args) {
     mp_int_t res = _iocs_bgscrlst(bg | (vsync ? 0 : 0x80000000), x, y);
     return MP_OBJ_NEW_SMALL_INT(res);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgscroll_obj, 4, 5, x68k_spr_bgscroll);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(x68k_spr_bgscroll_obj, 4, 5, x68k_spr_bgscroll);
 
-STATIC mp_obj_t x68k_sprite_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t x68k_sprite_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     mp_obj_x68k_sprite_t *o = mp_obj_malloc(mp_obj_x68k_sprite_t, type);
@@ -229,7 +229,7 @@ STATIC mp_obj_t x68k_sprite_make_new(const mp_obj_type_t *type, size_t n_args, s
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t x68k_sprite_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
+static mp_obj_t x68k_sprite_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_x68k_sprite_t *o = MP_OBJ_TO_PTR(o_in);
     switch (op) {
         case MP_UNARY_OP_LEN:
@@ -242,7 +242,7 @@ STATIC mp_obj_t x68k_sprite_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     }
 }
 
-STATIC mp_obj_t x68k_sprite_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+static mp_obj_t x68k_sprite_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete
         return MP_OBJ_NULL; // op not supported
@@ -263,7 +263,7 @@ STATIC mp_obj_t x68k_sprite_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t
     return MP_OBJ_NULL;
 }
 
-STATIC mp_int_t x68k_sprite_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+static mp_int_t x68k_sprite_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     (void)flags;
     if (x68k_super_mode) {
         mp_obj_x68k_sprite_t *self = MP_OBJ_TO_PTR(self_in);
@@ -274,7 +274,7 @@ STATIC mp_int_t x68k_sprite_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufin
     return 0;
 }
 
-STATIC const mp_rom_map_elem_t x68k_sprite_locals_dict_table[] = {
+static const mp_rom_map_elem_t x68k_sprite_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init),   MP_ROM_PTR(&x68k_spr_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_disp),   MP_ROM_PTR(&x68k_spr_disp_obj) },
     { MP_ROM_QSTR(MP_QSTR_clr),    MP_ROM_PTR(&x68k_spr_clr_obj) },
@@ -289,7 +289,7 @@ STATIC const mp_rom_map_elem_t x68k_sprite_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bgget),  MP_ROM_PTR(&x68k_spr_bgget_obj) },
     { MP_ROM_QSTR(MP_QSTR_bgscroll), MP_ROM_PTR(&x68k_spr_bgscroll_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(x68k_sprite_locals_dict, x68k_sprite_locals_dict_table);
+static MP_DEFINE_CONST_DICT(x68k_sprite_locals_dict, x68k_sprite_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     x68k_type_sprite,
