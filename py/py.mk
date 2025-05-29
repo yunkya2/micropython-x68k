@@ -123,13 +123,10 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	emitnxtensawin.o \
 	asmrv32.o \
 	emitnrv32.o \
-<<<<<<< HEAD
+	emitinlinerv32.o \
 	asmm68k.o \
 	emitnm68k.o \
 	emitinlinem68k.o \
-=======
-	emitinlinerv32.o \
->>>>>>> v1.25.0
 	emitndebug.o \
 	formatfloat.o \
 	parsenumbase.o \

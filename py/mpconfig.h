@@ -416,7 +416,11 @@
 #define MICROPY_EMIT_RV32 (0)
 #endif
 
-<<<<<<< HEAD
+// Whether to enable the RISC-V RV32 inline assembler
+#ifndef MICROPY_EMIT_INLINE_RV32
+#define MICROPY_EMIT_INLINE_RV32 (0)
+#endif
+
 // Whether to emit m68000 native code
 #ifndef MICROPY_EMIT_M68K
 #define MICROPY_EMIT_M68K (0)
@@ -430,11 +434,6 @@
 // Add a multiply helper function for CPUs that don't have 32-bit multply
 #ifndef MICROPY_SMALL_INT_MUL_HELPER
 #define MICROPY_SMALL_INT_MUL_HELPER (0)
-=======
-// Whether to enable the RISC-V RV32 inline assembler
-#ifndef MICROPY_EMIT_INLINE_RV32
-#define MICROPY_EMIT_INLINE_RV32 (0)
->>>>>>> v1.25.0
 #endif
 
 // Convenience definition for whether any native emitter is enabled
@@ -446,11 +445,7 @@
 #define MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE (MICROPY_EMIT_XTENSAWIN)
 
 // Convenience definition for whether any inline assembler emitter is enabled
-<<<<<<< HEAD
-#define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_INLINE_M68K)
-=======
-#define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_INLINE_RV32)
->>>>>>> v1.25.0
+#define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_INLINE_RV32 || MICROPY_EMIT_INLINE_M68K)
 
 // Convenience definition for whether any native or inline assembler emitter is enabled
 #define MICROPY_EMIT_MACHINE_CODE (MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM)
