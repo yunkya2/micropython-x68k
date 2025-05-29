@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Yuichi Nakamura
+ * Copyright (c) 2023-2025 Yuichi Nakamura
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,8 +47,11 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 // Send string of given length
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-    write(STDOUT_FILENO, str, len);
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    ssize_t ret;
+    ret = write(STDOUT_FILENO, str, len);
+    mp_uint_t written = ret < 0 ? 0 : ret;
+    return written;
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
