@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Yuichi Nakamura
+ * Copyright (c) 2023-2025 Yuichi Nakamura
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,6 +96,7 @@
 
 // Enable the "machine" module.
 #define MICROPY_PY_MACHINE             (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/x68k/modmachine.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 
 #ifndef MICROPY_PY_SYS_PATH_DEFAULT
