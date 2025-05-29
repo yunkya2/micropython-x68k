@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Yuichi Nakamura
+ * Copyright (c) 2023-2025 Yuichi Nakamura
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -224,6 +224,14 @@ void asm_m68k_mov_reg_reg(asm_m68k_t *as, uint rd, uint rs) {
     asm_m68k_op_move(as, 0x2000, rd, rs);               // move.l rs,rd
 }
 
+void asm_m68k_not_reg(asm_m68k_t *as, uint rd) {
+    DEBUG_printf("ASM_NOT_REG(r%d)\n", rd);
+    asm_m68k_op_ea(as, 0x4680, rd);                     // not.l rd
+}
+void asm_m68k_neg_reg(asm_m68k_t *as, uint rd) {
+    DEBUG_printf("ASM_NEG_REG(r%d)\n", rd);
+    asm_m68k_op_ea(as, 0x4480, rd);                     // neg.l rd
+}
 void asm_m68k_lsl_reg_reg(asm_m68k_t *as, uint rd, uint rshift) {
     DEBUG_printf("ASM_LSL_REG_REG(r%d<-r%d)\n", rd, rshift);
     asm_m68k_op_regea(as, 0xe1a8, rshift, rd);          // lsl.l rshift,rd

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) Yuichi Nakamura
+ * Copyright (c) 2023-2025 Yuichi Nakamura
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -138,6 +138,8 @@ void asm_m68k_mov_reg_local(asm_m68k_t *as, uint rd, int local_num);
 void asm_m68k_mov_reg_local_addr(asm_m68k_t *as, uint rd, int local_num);
 void asm_m68k_mov_reg_reg(asm_m68k_t *as, uint rd, uint rs);
 
+void asm_m68k_not_reg(asm_m68k_t *as, uint rd);
+void asm_m68k_neg_reg(asm_m68k_t *as, uint rd);
 void asm_m68k_lsl_reg_reg(asm_m68k_t *as, uint rd, uint rshift);
 void asm_m68k_lsr_reg_reg(asm_m68k_t *as, uint rd, uint rshift);
 void asm_m68k_asr_reg_reg(asm_m68k_t *as, uint rd, uint rshift);
@@ -225,6 +227,8 @@ void asm_m68k_st32_reg_reg(asm_m68k_t *as, uint rs, uint rbase);
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_m68k_mov_reg_local_addr((as), (reg_dest), (local_num))
 #define ASM_MOV_REG_PCREL(as, reg_dest, label) asm_m68k_mov_reg_pcrel((as), (reg_dest), (label))
 
+#define ASM_NOT_REG(as, reg) asm_m68k_not_reg((as), (reg))
+#define ASM_NEG_REG(as, reg) asm_m68k_neg_reg((as), (reg))
 #define ASM_LSL_REG_REG(as, reg_dest, reg_shift) asm_m68k_lsl_reg_reg((as), (reg_dest), (reg_shift))
 #define ASM_LSR_REG_REG(as, reg_dest, reg_shift) asm_m68k_lsr_reg_reg((as), (reg_dest), (reg_shift))
 #define ASM_ASR_REG_REG(as, reg_dest, reg_shift) asm_m68k_asr_reg_reg((as), (reg_dest), (reg_shift))
