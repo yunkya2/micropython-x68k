@@ -46,9 +46,15 @@
 #define MICROPY_EMIT_XTENSA         (1)
 #define MICROPY_EMIT_INLINE_XTENSA  (1)
 #define MICROPY_EMIT_XTENSAWIN      (1)
+<<<<<<< HEAD
 #define MICROPY_EMIT_M68K           (1)
 #define MICROPY_EMIT_INLINE_M68K    (1)
 #define MICROPY_SMALL_INT_MUL_HELPER    (1)
+=======
+#define MICROPY_EMIT_RV32           (1)
+#define MICROPY_EMIT_NATIVE_DEBUG   (1)
+#define MICROPY_EMIT_NATIVE_DEBUG_PRINTER (&mp_stdout_print)
+>>>>>>> v1.24.0
 
 #define MICROPY_DYNAMIC_COMPILER    (1)
 #define MICROPY_COMP_CONST_FOLDING  (1)
@@ -166,3 +172,5 @@ typedef int ssize_t;
 typedef mp_off_t off_t;
 
 #endif
+
+extern const struct _mp_print_t mp_stdout_print;

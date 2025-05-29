@@ -27,11 +27,11 @@
 #include <stdio.h>
 
 #include "py/compile.h"
+#include "py/cstack.h"
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "py/stackctrl.h"
 #include "extmod/modbluetooth.h"
 #include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
@@ -50,7 +50,6 @@
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "pico/unique_id.h"
-#include "hardware/rtc.h"
 #include "hardware/structs/rosc.h"
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
@@ -59,6 +58,13 @@
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
+#if PICO_RP2040
+#include "RP2040.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
+#elif PICO_RP2350 && PICO_ARM
+#include "RP2350.h" // cmsis, for PendSV_IRQn and SCB/SCB_SCR_SEVONPEND_Msk
+#endif
+#include "pico/aon_timer.h"
+#include "shared/timeutils/timeutils.h"
 
 extern uint8_t __StackTop, __StackBottom;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
@@ -74,7 +80,18 @@ bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
 
 int main(int argc, char **argv) {
     // This is a tickless port, interrupts should always trigger SEV.
+    #if PICO_ARM
     SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
+    #endif
+
+    pendsv_init();
+    soft_timer_init();
+
+    // Set the MCU frequency and as a side effect the peripheral clock to 48 MHz.
+    set_sys_clock_khz(SYS_CLK_KHZ, false);
+
+    // Hook for setting up anything that needs to be super early in the bootup process.
+    MICROPY_BOARD_STARTUP();
 
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
@@ -96,22 +113,13 @@ int main(int argc, char **argv) {
     #endif
 
     // Start and initialise the RTC
-    datetime_t t = {
-        .year = 2021,
-        .month = 1,
-        .day = 1,
-        .dotw = 4, // 0 is Monday, so 4 is Friday
-        .hour = 0,
-        .min = 0,
-        .sec = 0,
-    };
-    rtc_init();
-    rtc_set_datetime(&t);
+    struct timespec ts = { 0, 0 };
+    ts.tv_sec = timeutils_seconds_since_epoch(2021, 1, 1, 0, 0, 0);
+    aon_timer_start(&ts);
     mp_hal_time_ns_set_from_rtc();
 
     // Initialise stack extents and GC heap.
-    mp_stack_set_top(&__StackTop);
-    mp_stack_set_limit(&__StackTop - &__StackBottom - 256);
+    mp_cstack_init_with_top(&__StackTop, &__StackTop - &__StackBottom);
     gc_init(&__GcHeapStart, &__GcHeapEnd);
 
     #if MICROPY_PY_LWIP
@@ -145,6 +153,9 @@ int main(int argc, char **argv) {
         cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t *)"picoW123");
     }
     #endif
+
+    // Hook for setting up anything that can wait until after other hardware features are initialised.
+    MICROPY_BOARD_EARLY_INIT();
 
     for (;;) {
 
@@ -207,9 +218,14 @@ int main(int argc, char **argv) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+
+        // Hook for resetting anything immediately following a soft reset command.
+        MICROPY_BOARD_START_SOFT_RESET();
+
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        machine_i2s_deinit_all();
         rp2_dma_deinit();
         rp2_pio_deinit();
         #if MICROPY_PY_BLUETOOTH
@@ -217,6 +233,7 @@ int main(int argc, char **argv) {
         #endif
         machine_pwm_deinit_all();
         machine_pin_deinit();
+        machine_uart_deinit_all();
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif
@@ -225,8 +242,15 @@ int main(int argc, char **argv) {
         mp_usbd_deinit();
         #endif
 
+        // Hook for resetting anything right at the end of a soft reset command.
+        MICROPY_BOARD_END_SOFT_RESET();
+
         gc_sweep_all();
         mp_deinit();
+        #if MICROPY_HW_ENABLE_UART_REPL
+        setup_default_uart();
+        mp_uart_init();
+        #endif
     }
 
     return 0;
