@@ -37,6 +37,7 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 #include "tusb.h"
 #include "uart.h"
 #include "modmachine.h"
@@ -72,6 +73,9 @@ bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
     BI_NAMED_GROUP_SEPARATE_COMMAS | BI_NAMED_GROUP_SORT_ALPHA));
 
 int main(int argc, char **argv) {
+    // This is a tickless port, interrupts should always trigger SEV.
+    SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
+
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
     setup_default_uart();
@@ -155,6 +159,7 @@ int main(int argc, char **argv) {
         readline_init0();
         machine_pin_init();
         rp2_pio_init();
+        rp2_dma_init();
         machine_i2s_init0();
 
         #if MICROPY_PY_BLUETOOTH
@@ -179,7 +184,7 @@ int main(int argc, char **argv) {
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
             ret = pyexec_file_if_exists("main.py");
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
@@ -203,6 +208,7 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        rp2_dma_deinit();
         rp2_pio_deinit();
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
@@ -212,6 +218,7 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif
+        soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
     }

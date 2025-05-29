@@ -29,7 +29,10 @@
 #include "py/mphal.h"
 #include "extmod/misc.h"
 #include "shared/runtime/interrupt_char.h"
+#include "shared/runtime/softtimer.h"
 #include "shared/timeutils/timeutils.h"
+#include "shared/tinyusb/mp_usbd.h"
+#include "pendsv.h"
 #include "tusb.h"
 #include "uart.h"
 #include "hardware/rtc.h"
@@ -42,6 +45,8 @@
 // This needs to be added to the result of time_us_64() to get the number of
 // microseconds since the Epoch.
 STATIC uint64_t time_us_64_offset_from_epoch;
+
+static alarm_id_t soft_timer_alarm_id = 0;
 
 #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
 
@@ -59,6 +64,12 @@ ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
 uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
 
 void poll_cdc_interfaces(void) {
+    if (!cdc_itf_pending) {
+        // Explicitly run the USB stack as the scheduler may be locked (eg we are in
+        // an interrupt handler) while there is data pending.
+        mp_usbd_task();
+    }
+
     // any CDC interfaces left to poll?
     if (cdc_itf_pending && ringbuf_free(&stdin_ringbuf)) {
         for (uint8_t itf = 0; itf < 8; ++itf) {
@@ -135,19 +146,23 @@ int mp_hal_stdin_rx_chr(void) {
             return dupterm_c;
         }
         #endif
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_indefinite();
     }
 }
 
 // Send string of given length
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+    mp_uint_t ret = len;
+    bool did_write = false;
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_write_strn(str, len);
+    did_write = true;
     #endif
 
     #if MICROPY_HW_USB_CDC
     if (tud_cdc_connected()) {
-        for (size_t i = 0; i < len;) {
+        size_t i = 0;
+        while (i < len) {
             uint32_t n = len - i;
             if (n > CFG_TUD_CDC_EP_BUFSIZE) {
                 n = CFG_TUD_CDC_EP_BUFSIZE;
@@ -155,29 +170,40 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             int timeout = 0;
             // Wait with a max of USC_CDC_TIMEOUT ms
             while (n > tud_cdc_write_available() && timeout++ < MICROPY_HW_USB_CDC_TX_TIMEOUT) {
-                MICROPY_EVENT_POLL_HOOK
+                mp_event_wait_ms(1);
+
+                // Explicitly run the USB stack as the scheduler may be locked (eg we
+                // are in an interrupt handler), while there is data pending.
+                mp_usbd_task();
             }
             if (timeout >= MICROPY_HW_USB_CDC_TX_TIMEOUT) {
+                ret = i;
                 break;
             }
             uint32_t n2 = tud_cdc_write(str + i, n);
             tud_cdc_write_flush();
             i += n2;
         }
+        ret = MIN(i, ret);
+        did_write = true;
     }
     #endif
 
     #if MICROPY_PY_OS_DUPTERM
-    mp_os_dupterm_tx_strn(str, len);
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        did_write = true;
+        ret = MIN((mp_uint_t)dupterm_res, ret);
+    }
     #endif
+    return did_write ? ret : 0;
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     absolute_time_t t = make_timeout_time_ms(ms);
-    while (!time_reached(t)) {
-        MICROPY_EVENT_POLL_HOOK_FAST;
-        best_effort_wfe_or_timeout(t);
-    }
+    do {
+        mp_event_handle_nowait();
+    } while (!best_effort_wfe_or_timeout(t));
 }
 
 void mp_hal_time_ns_set_from_rtc(void) {
@@ -245,4 +271,23 @@ void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
 // Shouldn't be used, needed by cyw43-driver in debug build.
 uint32_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     panic_unsupported();
+}
+
+static int64_t soft_timer_callback(alarm_id_t id, void *user_data) {
+    soft_timer_alarm_id = 0;
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
+    return 0; // don't reschedule this alarm
+}
+
+uint32_t soft_timer_get_ms(void) {
+    return mp_hal_ticks_ms();
+}
+
+void soft_timer_schedule_at_ms(uint32_t ticks_ms) {
+    if (soft_timer_alarm_id != 0) {
+        cancel_alarm(soft_timer_alarm_id);
+    }
+    int32_t ms = soft_timer_ticks_diff(ticks_ms, mp_hal_ticks_ms());
+    ms = MAX(0, ms);
+    soft_timer_alarm_id = add_alarm_in_ms(ms, soft_timer_callback, NULL, true);
 }
