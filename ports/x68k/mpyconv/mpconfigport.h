@@ -48,7 +48,10 @@
 #define MICROPY_EMIT_RV32           (1)
 #define MICROPY_EMIT_M68K           (1)
 #define MICROPY_EMIT_INLINE_M68K    (1)
+#define MICROPY_EMIT_NATIVE_DEBUG   (1)
+#define MICROPY_EMIT_NATIVE_DEBUG_PRINTER (&mp_stdout_print)
 #define MICROPY_SMALL_INT_MUL_HELPER    (1)
+
 #define MICROPY_MPYCROSS_DEFAULT_ARCH           MP_NATIVE_ARCH_M68K
 #define MICROPY_MPYCROSS_DEFAULT_NLR_NUM_REGS   (0)
 
@@ -170,3 +173,5 @@ typedef int ssize_t;
 typedef mp_off_t off_t;
 
 #endif
+
+extern const struct _mp_print_t mp_stdout_print;
