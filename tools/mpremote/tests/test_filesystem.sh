@@ -66,6 +66,16 @@ $MPREMOTE resume cp "${TMP}/a.py" :aaa
 $MPREMOTE resume cp "${TMP}/a.py" :bbb/b.py
 $MPREMOTE resume cat :aaa/a.py bbb/b.py
 
+# Test cp -f (force copy).
+echo -----
+$MPREMOTE resume cp -f "${TMP}/a.py" :aaa
+$MPREMOTE resume cat :aaa/a.py
+
+# Test cp where the destination has a trailing /.
+echo -----
+$MPREMOTE resume cp "${TMP}/a.py" :aaa/
+$MPREMOTE resume cp "${TMP}/a.py" :aaa/a.py/ || echo "expect error"
+
 echo -----
 $MPREMOTE resume rm :b.py c.py
 $MPREMOTE resume ls
@@ -160,3 +170,67 @@ EOF
 $MPREMOTE resume cp -r "${TMP}/package" :
 $MPREMOTE resume ls : :package :package/subpackage
 $MPREMOTE resume exec "import package; package.x(); package.y()"
+
+echo -----
+# Test rm -r functionality
+# start with a fresh ramdisk before each test
+# rm -r MCU current working directory
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume touch :b.py
+$MPREMOTE resume cp -r "${TMP}/package" :
+$MPREMOTE resume rm -r -v :
+$MPREMOTE resume ls :
+$MPREMOTE resume ls :/ramdisk
+
+echo -----
+# rm -r relative subfolder
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume mkdir :testdir
+$MPREMOTE resume cp -r "${TMP}/package" :testdir/package
+$MPREMOTE resume ls :testdir
+$MPREMOTE resume ls :testdir/package
+$MPREMOTE resume rm -r :testdir/package
+$MPREMOTE resume ls :/ramdisk
+$MPREMOTE resume ls :testdir
+
+echo -----
+# rm -r non-existent path
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume ls :
+$MPREMOTE resume rm -r :nonexistent || echo "expect error"
+
+echo -----
+# rm -r absolute root
+# no -v to generate same output on stm32 and other ports
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume touch :b.py
+$MPREMOTE resume cp -r "${TMP}/package" :
+$MPREMOTE resume cp -r "${TMP}/package" :package2
+$MPREMOTE resume rm -r :/ || echo "expect error"
+$MPREMOTE resume ls :
+$MPREMOTE resume ls :/ramdisk
+
+echo -----
+# rm -r relative mountpoint
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume touch :b.py
+$MPREMOTE resume cp -r "${TMP}/package" :
+$MPREMOTE resume exec "import os;os.chdir('/')"
+$MPREMOTE resume rm -r -v :ramdisk
+$MPREMOTE resume ls :/ramdisk
+
+echo -----
+# rm -r absolute mountpoint
+$MPREMOTE run "${TMP}/ramdisk.py"
+$MPREMOTE resume touch :a.py
+$MPREMOTE resume touch :b.py
+$MPREMOTE resume cp -r "${TMP}/package" :
+$MPREMOTE resume exec "import os;os.chdir('/')"
+$MPREMOTE resume rm -r -v :/ramdisk
+$MPREMOTE resume ls :/ramdisk
+
+echo -----

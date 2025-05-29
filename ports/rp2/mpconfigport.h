@@ -67,12 +67,34 @@
 #endif
 #endif
 
+// Number of bytes of flash to allocate to the ROMFS partition.
+#ifndef MICROPY_HW_ROMFS_BYTES
+#define MICROPY_HW_ROMFS_BYTES (0)
+#endif
+
+// Number of bytes of flash to allocate to read/write filesystem storage.
+#ifndef MICROPY_HW_FLASH_STORAGE_BYTES
+#define MICROPY_HW_FLASH_STORAGE_BYTES (1408 * 1024)
+#endif
+
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 #endif
 
+#ifndef MICROPY_HW_ENABLE_PSRAM
+#define MICROPY_HW_ENABLE_PSRAM (0)
+#endif
+
 // Memory allocation policies
+#if MICROPY_HW_ENABLE_PSRAM
+#define MICROPY_GC_STACK_ENTRY_TYPE             uint32_t
+#define MICROPY_ALLOC_GC_STACK_SIZE             (1024) // Avoid slowdown when GC stack overflow causes a full sweep of PSRAM-backed heap
+#else
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
+#endif
+#ifndef MICROPY_GC_SPLIT_HEAP
+#define MICROPY_GC_SPLIT_HEAP                   MICROPY_HW_ENABLE_PSRAM // whether PSRAM is added to or replaces the heap
+#endif
 #define MICROPY_ALLOC_PATH_MAX                  (128)
 #define MICROPY_QSTR_BYTES_IN_HASH              (1)
 
@@ -87,6 +109,7 @@
 #endif
 #elif PICO_RISCV
 #define MICROPY_EMIT_RV32                       (1)
+#define MICROPY_EMIT_INLINE_RV32                (1)
 #endif
 
 // Optimisations
@@ -169,6 +192,7 @@
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
 #define MICROPY_VFS_FAT                         (1)
+#define MICROPY_VFS_ROM                         (MICROPY_HW_ROMFS_BYTES > 0)
 #define MICROPY_SSL_MBEDTLS                     (1)
 #define MICROPY_PY_LWIP_PPP                     (MICROPY_PY_NETWORK_PPP_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
@@ -178,7 +202,7 @@
 #define MICROPY_HW_SOFT_TIMER_ALARM_NUM         (2)
 
 // fatfs configuration
-#define MICROPY_FATFS_ENABLE_LFN                (1)
+#define MICROPY_FATFS_ENABLE_LFN                (2)
 #define MICROPY_FATFS_LFN_CODE_PAGE             437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_RPATH                     (2)
 #if MICROPY_HW_USB_MSC
@@ -210,6 +234,10 @@
 #endif
 #ifndef MICROPY_PY_WEBREPL
 #define MICROPY_PY_WEBREPL              (1)
+#endif
+
+#ifndef MICROPY_PY_NETWORK_PPP_LWIP
+#define MICROPY_PY_NETWORK_PPP_LWIP     (0)
 #endif
 #endif
 

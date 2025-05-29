@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+#include "rp2_flash.h"
 #include "py/compile.h"
 #include "py/cstack.h"
 #include "py/runtime.h"
@@ -46,6 +47,7 @@
 #include "mpnetworkport.h"
 #include "genhdr/mpversion.h"
 #include "mp_usbd.h"
+#include "rp2_psram.h"
 
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
@@ -90,8 +92,15 @@ int main(int argc, char **argv) {
     // Set the MCU frequency and as a side effect the peripheral clock to 48 MHz.
     set_sys_clock_khz(SYS_CLK_KHZ, false);
 
-    // Hook for setting up anything that needs to be super early in the bootup process.
+    // Hook for setting up anything that needs to be super early in the boot-up process.
     MICROPY_BOARD_STARTUP();
+
+    // Set the flash divisor to an appropriate value
+    rp2_flash_set_timing();
+
+    #if MICROPY_HW_ENABLE_PSRAM
+    size_t psram_size = psram_init(MICROPY_HW_PSRAM_CS_PIN);
+    #endif
 
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
@@ -120,7 +129,21 @@ int main(int argc, char **argv) {
 
     // Initialise stack extents and GC heap.
     mp_cstack_init_with_top(&__StackTop, &__StackTop - &__StackBottom);
+
+    #if MICROPY_HW_ENABLE_PSRAM
+    if (psram_size) {
+        #if MICROPY_GC_SPLIT_HEAP
+        gc_init(&__GcHeapStart, &__GcHeapEnd);
+        gc_add((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
+        #else
+        gc_init((void *)PSRAM_BASE, (void *)(PSRAM_BASE + psram_size));
+        #endif
+    } else {
+        gc_init(&__GcHeapStart, &__GcHeapEnd);
+    }
+    #else
     gc_init(&__GcHeapStart, &__GcHeapEnd);
+    #endif
 
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function

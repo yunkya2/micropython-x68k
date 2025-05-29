@@ -24,7 +24,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import ast, hashlib, os, sys
+import ast, errno, hashlib, os, sys
 from collections import namedtuple
 
 
@@ -63,6 +63,10 @@ def _convert_filesystem_error(e, info):
         return FileExistsError(info)
     if "OSError" in e.error_output and "ENODEV" in e.error_output:
         return FileNotFoundError(info)
+    if "OSError" in e.error_output and "EINVAL" in e.error_output:
+        return OSError(errno.EINVAL, info)
+    if "OSError" in e.error_output and "EPERM" in e.error_output:
+        return OSError(errno.EPERM, info)
     return e
 
 
@@ -73,7 +77,7 @@ class Transport:
         def repr_consumer(b):
             buf.extend(b.replace(b"\x04", b""))
 
-        cmd = "import os\nfor f in os.ilistdir(%s):\n" " print(repr(f), end=',')" % (
+        cmd = "import os\nfor f in os.ilistdir(%s):\n print(repr(f), end=',')" % (
             ("'%s'" % src) if src else ""
         )
         try:
@@ -151,9 +155,9 @@ class Transport:
             while data:
                 chunk = data[:chunk_size]
                 self.exec("w(" + repr(chunk) + ")")
-                written += len(chunk)
                 data = data[len(chunk) :]
                 if progress_callback:
+                    written += len(chunk)
                     progress_callback(written, src_size)
             self.exec("f.close()")
         except TransportExecError as e:

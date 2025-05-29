@@ -42,7 +42,7 @@ from .transport import TransportError, TransportExecError, Transport
 
 
 class SerialTransport(Transport):
-    def __init__(self, device, baudrate=115200, wait=0, exclusive=True):
+    def __init__(self, device, baudrate=115200, wait=0, exclusive=True, timeout=None):
         self.in_raw_repl = False
         self.use_raw_paste = True
         self.device_name = device
@@ -52,7 +52,11 @@ class SerialTransport(Transport):
         import serial.tools.list_ports
 
         # Set options, and exclusive if pyserial supports it
-        serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
+        serial_kwargs = {
+            "baudrate": baudrate,
+            "timeout": timeout,
+            "interCharTimeout": 1,
+        }
         if serial.__version__ >= "3.3":
             serial_kwargs["exclusive"] = exclusive
 
@@ -94,14 +98,25 @@ class SerialTransport(Transport):
     def close(self):
         self.serial.close()
 
-    def read_until(self, min_num_bytes, ending, timeout=10, data_consumer=None):
-        # if data_consumer is used then data is not accumulated and the ending must be 1 byte long
-        assert data_consumer is None or len(ending) == 1
+    def read_until(
+        self, min_num_bytes, ending, timeout=10, data_consumer=None, timeout_overall=None
+    ):
+        """
+        min_num_bytes: Obsolete.
+        ending: Return if 'ending' matches.
+        timeout [s]: Return if timeout between characters. None: Infinite timeout.
+        timeout_overall [s]: Return not later than timeout_overall. None: Infinite timeout.
+        data_consumer: Use callback for incoming characters.
+            If data_consumer is used then data is not accumulated and the ending must be 1 byte long
 
-        data = self.serial.read(min_num_bytes)
-        if data_consumer:
-            data_consumer(data)
-        timeout_count = 0
+        It is not visible to the caller why the function returned. It could be ending or timeout.
+        """
+        assert data_consumer is None or len(ending) == 1
+        assert isinstance(timeout, (type(None), int, float))
+        assert isinstance(timeout_overall, (type(None), int, float))
+
+        data = b""
+        begin_overall_s = begin_char_s = time.monotonic()
         while True:
             if data.endswith(ending):
                 break
@@ -112,15 +127,19 @@ class SerialTransport(Transport):
                     data = new_data
                 else:
                     data = data + new_data
-                timeout_count = 0
+                begin_char_s = time.monotonic()
             else:
-                timeout_count += 1
-                if timeout is not None and timeout_count >= 100 * timeout:
+                if timeout is not None and time.monotonic() >= begin_char_s + timeout:
+                    break
+                if (
+                    timeout_overall is not None
+                    and time.monotonic() >= begin_overall_s + timeout_overall
+                ):
                     break
                 time.sleep(0.01)
         return data
 
-    def enter_raw_repl(self, soft_reset=True):
+    def enter_raw_repl(self, soft_reset=True, timeout_overall=10):
         self.serial.write(b"\r\x03")  # ctrl-C: interrupt any running program
 
         # flush input (without relying on serial.flushInput())
@@ -132,7 +151,9 @@ class SerialTransport(Transport):
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
 
         if soft_reset:
-            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
+            data = self.read_until(
+                1, b"raw REPL; CTRL-B to exit\r\n>", timeout_overall=timeout_overall
+            )
             if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
                 print(data)
                 raise TransportError("could not enter raw repl")
@@ -142,12 +163,12 @@ class SerialTransport(Transport):
             # Waiting for "soft reboot" independently to "raw REPL" (done below)
             # allows boot.py to print, which will show up after "soft reboot"
             # and before "raw REPL".
-            data = self.read_until(1, b"soft reboot\r\n")
+            data = self.read_until(1, b"soft reboot\r\n", timeout_overall=timeout_overall)
             if not data.endswith(b"soft reboot\r\n"):
                 print(data)
                 raise TransportError("could not enter raw repl")
 
-        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
+        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n", timeout_overall=timeout_overall)
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
             print(data)
             raise TransportError("could not enter raw repl")
@@ -383,12 +404,13 @@ fs_hook_cmds = {
     "CMD_OPEN": 4,
     "CMD_CLOSE": 5,
     "CMD_READ": 6,
-    "CMD_WRITE": 7,
-    "CMD_SEEK": 8,
-    "CMD_REMOVE": 9,
-    "CMD_RENAME": 10,
-    "CMD_MKDIR": 11,
-    "CMD_RMDIR": 12,
+    "CMD_READLINE": 7,
+    "CMD_WRITE": 8,
+    "CMD_SEEK": 9,
+    "CMD_REMOVE": 10,
+    "CMD_RENAME": 11,
+    "CMD_MKDIR": 12,
+    "CMD_RMDIR": 13,
 }
 
 fs_hook_code = """\
@@ -571,12 +593,16 @@ class RemoteFile(io.IOBase):
         return n
 
     def readline(self):
-        l = ''
-        while 1:
-            c = self.read(1)
-            l += c
-            if c == '\\n' or c == '':
-                return l
+        c = self.cmd
+        c.begin(CMD_READLINE)
+        c.wr_s8(self.fd)
+        data = c.rd_bytes(None)
+        c.end()
+        if self.is_text:
+            data = str(data, 'utf8')
+        else:
+            data = bytes(data)
+        return data
 
     def readlines(self):
         ls = []
@@ -725,8 +751,7 @@ def __mount():
 """
 
 # Apply basic compression on hook code.
-for key, value in fs_hook_cmds.items():
-    fs_hook_code = re.sub(key, str(value), fs_hook_code)
+fs_hook_code = re.sub(r"CMD_[A-Z_]+", lambda m: str(fs_hook_cmds[m.group(0)]), fs_hook_code)
 fs_hook_code = re.sub(" *#.*$", "", fs_hook_code, flags=re.MULTILINE)
 fs_hook_code = re.sub("\n\n+", "\n", fs_hook_code)
 fs_hook_code = re.sub("    ", " ", fs_hook_code)
@@ -866,6 +891,14 @@ class PyboardCommand:
         self.wr_bytes(buf)
         # self.log_cmd(f"read {fd} {n} -> {len(buf)}")
 
+    def do_readline(self):
+        fd = self.rd_s8()
+        buf = self.data_files[fd][0].readline()
+        if self.data_files[fd][1]:
+            buf = bytes(buf, "utf8")
+        self.wr_bytes(buf)
+        # self.log_cmd(f"readline {fd} -> {len(buf)}")
+
     def do_seek(self):
         fd = self.rd_s8()
         n = self.rd_s32()
@@ -939,6 +972,7 @@ class PyboardCommand:
         fs_hook_cmds["CMD_OPEN"]: do_open,
         fs_hook_cmds["CMD_CLOSE"]: do_close,
         fs_hook_cmds["CMD_READ"]: do_read,
+        fs_hook_cmds["CMD_READLINE"]: do_readline,
         fs_hook_cmds["CMD_WRITE"]: do_write,
         fs_hook_cmds["CMD_SEEK"]: do_seek,
         fs_hook_cmds["CMD_REMOVE"]: do_remove,

@@ -43,7 +43,7 @@
 #include "modesp32.h"
 #include "genhdr/pins.h"
 
-#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
+#if SOC_USB_SERIAL_JTAG_SUPPORTED
 #include "soc/usb_serial_jtag_reg.h"
 #endif
 
@@ -158,12 +158,12 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         }
     }
 
-    #if CONFIG_IDF_TARGET_ESP32C3 && MICROPY_HW_ESP_USB_SERIAL_JTAG
+    #if CONFIG_IDF_TARGET_ESP32C3 && !MICROPY_HW_ESP_USB_SERIAL_JTAG
     if (index == 18 || index == 19) {
         CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
     #endif
-    #if CONFIG_IDF_TARGET_ESP32C6 && CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED
+    #if CONFIG_IDF_TARGET_ESP32C6 && !MICROPY_HW_ESP_USB_SERIAL_JTAG
     if (index == 12 || index == 13) {
         CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
@@ -287,6 +287,15 @@ static mp_obj_t machine_pin_on(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
+// pin.toggle()
+static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    gpio_num_t index = PIN_OBJ_PTR_INDEX(self);
+    gpio_set_level(index, 1 - mp_hal_pin_read_output(index));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
+
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING)
 static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_wake };
@@ -366,6 +375,7 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&machine_pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&machine_pin_toggle_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
 
     // class attributes

@@ -250,6 +250,7 @@ SRC_C += \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_sdcard.c \
+	modrenesas.c \
 	extint.c \
 	usrsw.c \
 	flash.c \
@@ -442,7 +443,8 @@ endef
 
 define GENERATE_BIN
 	$(ECHO) "GEN $(1)"
-	$(Q)$(OBJCOPY) -I ihex -O binary $(2) $(1)
+	$(Q)$(OBJCOPY) -O binary -j .id_code $(2) $(BUILD)/id_code.bin
+	$(Q)$(OBJCOPY) -O binary --remove-section=.id_code $(2) $(1)
 endef
 
 define GENERATE_HEX
@@ -452,7 +454,7 @@ endef
 
 .PHONY:
 
-$(BUILD)/firmware.bin: $(BUILD)/firmware.hex
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(call GENERATE_BIN,$@,$^)
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf

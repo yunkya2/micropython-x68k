@@ -21,6 +21,7 @@ BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
 GIT_SUBMODULES += lib/tinyusb lib/nxp_driver
+UF2CONV ?= $(TOP)/tools/uf2conv.py
 
 # MicroPython feature configurations
 MICROPY_VFS_LFS2 ?= 1
@@ -78,6 +79,7 @@ INC += -I$(TOP)/lib/oofatfs
 INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/hw/bsp/teensy_40
 INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/shared/tinyusb
 INC += -I.
 INC += -Ihal
 
@@ -161,6 +163,13 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_romapi.c
 endif
 
+# If not empty, then it is 10xx.
+ifneq ($(findstring MIMXRT10, $(MCU_SERIES)),)
+APPLICATION_ADDR := 0x6000C000
+else
+APPLICATION_ADDR := 0x3000C000
+endif
+
 ifeq ($(MCU_SERIES), MIMXRT1176)
 INC += -I$(TOP)/$(MCU_DIR)/drivers/cm7
 
@@ -208,6 +217,7 @@ SRC_C += \
 	modmimxrt.c \
 	mphalport.c \
 	mpnetworkport.c \
+	msc_disk.c \
 	network_lan.c \
 	pendsv.c \
 	pin.c \
@@ -215,7 +225,7 @@ SRC_C += \
 	sdio.c \
 	systick.c \
 	ticks.c \
-	tusb_port.c \
+	usbd.c \
 
 SHARED_SRC_C += \
 	shared/libc/printf.c \
@@ -234,6 +244,7 @@ SHARED_SRC_C += \
 	shared/timeutils/timeutils.c \
 	shared/tinyusb/mp_usbd.c \
 	shared/tinyusb/mp_usbd_cdc.c \
+	shared/tinyusb/mp_usbd_descriptor.c \
 
 # Set flash driver name, base address and internal flash flag, based on the flash type.
 ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash))
@@ -251,6 +262,11 @@ else
     $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
 endif
 
+# Set a flag if the UF2 bootloader is used
+ifeq ($(USE_UF2_BOOTLOADER),1)
+	CFLAGS += -DMICROPY_MACHINE_UF2_BOOTLOADER=1
+endif
+
 # Add sources for respective board flash type
 # Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
 SRC_HAL_C += hal/flexspi_$(subst qspi_,,$(FLEXSPI_FLASH_TYPE)).c
@@ -264,6 +280,7 @@ endif
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 SRC_C += mpbthciport.c
+DRIVERS_SRC_C += drivers/cyw43/cywbt.c
 endif # MICROPY_PY_BLUETOOTH
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
@@ -310,6 +327,8 @@ SRC_SS = \
 
 SRC_S += shared/runtime/gchelper_thumb2.s \
 
+hal/resethandler_MIMXRT10xx.S: $(GEN_FLEXRAM_CONFIG_SRC)
+
 # =============================================================================
 # QSTR Sources
 # =============================================================================
@@ -343,6 +362,7 @@ CFLAGS += \
 	-DBOARD_$(BOARD) \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT1XXX \
+	-DCFG_TUD_MAX_SPEED=OPT_MODE_HIGH_SPEED \
 	-DCLOCK_CONFIG_H='<boards/$(MCU_SERIES)_clock_config.h>' \
 	-DCPU_$(MCU_SERIES)$(MCU_CORE) \
 	-DCPU_$(MCU_VARIANT) \
@@ -409,6 +429,12 @@ endif
 ifdef MICROPY_HW_FLASH_CLK
 	CFLAGS += -DMICROPY_HW_FLASH_CLK=$(MICROPY_HW_FLASH_CLK)
 endif
+ifdef MICROPY_HW_FLASH_QE_CMD
+	CFLAGS += -DMICROPY_HW_FLASH_QE_CMD=$(MICROPY_HW_FLASH_QE_CMD)
+endif
+ifdef MICROPY_HW_FLASH_QE_ARG
+	CFLAGS += -DMICROPY_HW_FLASH_QE_ARG=$(MICROPY_HW_FLASH_QE_ARG)
+endif
 
 CFLAGS += $(CFLAGS_EXTRA)
 
@@ -467,7 +493,11 @@ $(BUILD)/lib/tinyusb/src/device/usbd.o: CFLAGS += -Wno-missing-braces
 # Build targets
 # =============================================================================
 
+ifeq ($(USE_UF2_BOOTLOADER),1)
+all: $(BUILD)/firmware.hex $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+else
 all: $(BUILD)/firmware.hex $(BUILD)/firmware.bin
+endif
 
 # Process linker scripts with C preprocessor to exchange LDDEFINES and
 #	aggregate output of preprocessor in a single linker script `link.ld`
@@ -484,21 +514,25 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom $< $@
 
+$(BUILD)/firmware.uf2: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -O binary -R .stack -R .ivt -R .flash_config $^ $@-binpart
+	$(Q)$(PYTHON) $(UF2CONV) -b $(APPLICATION_ADDR) -f MIMXRT10XX -c -o $@ $@-binpart
+
 # Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
-$(OBJ): | $(GEN_PINS_HDR) $(GEN_FLEXRAM_CONFIG_SRC)
+$(OBJ): | $(GEN_PINS_HDR)
 
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
 $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 
-$(GEN_FLEXRAM_CONFIG_SRC):
+$(GEN_FLEXRAM_CONFIG_SRC): $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_FLEXRAM_LD) -d $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE).h \
-		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $(GEN_FLEXRAM_CONFIG_SRC)
+		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $@
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_gen.c and pins.h

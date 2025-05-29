@@ -52,9 +52,39 @@
 #define MICROPY_PY_PYB_LEGACY (1)
 #endif
 
+// Whether to include legacy methods and constants in machine.Pin (which is also pyb.Pin).
+#ifndef MICROPY_PY_MACHINE_PIN_LEGACY
+#define MICROPY_PY_MACHINE_PIN_LEGACY (!MICROPY_PREVIEW_VERSION_2)
+#endif
+
+// Whether to include support for alternate function selection in machine.Pin (and pyb.Pin).
+#ifndef MICROPY_PY_MACHINE_PIN_ALT_SUPPORT
+#define MICROPY_PY_MACHINE_PIN_ALT_SUPPORT (1)
+#endif
+
 // Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
 #ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
+#endif
+
+// Whether to enable ROMFS on the internal flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH
+#define MICROPY_HW_ROMFS_ENABLE_INTERNAL_FLASH (0)
+#endif
+
+// Whether to enable ROMFS on external QSPI flash.
+#ifndef MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI
+#define MICROPY_HW_ROMFS_ENABLE_EXTERNAL_QSPI (0)
+#endif
+
+// Whether to enable ROMFS partition 0.
+#ifndef MICROPY_HW_ROMFS_ENABLE_PART0
+#define MICROPY_HW_ROMFS_ENABLE_PART0 (0)
+#endif
+
+// Whether to enable ROMFS partition 1.
+#ifndef MICROPY_HW_ROMFS_ENABLE_PART1
+#define MICROPY_HW_ROMFS_ENABLE_PART1 (0)
 #endif
 
 // Whether to enable storage on the internal flash of the MCU
@@ -175,6 +205,12 @@
 // Function to determine if the given spi_id is reserved for system use or not.
 #ifndef MICROPY_HW_SPI_IS_RESERVED
 #define MICROPY_HW_SPI_IS_RESERVED(spi_id) (false)
+#endif
+
+// Function to determine if the given spi_id is static or not.
+// Static SPI instances can be accessed by the user but are not deinit'd on soft reset.
+#ifndef MICROPY_HW_SPI_IS_STATIC
+#define MICROPY_HW_SPI_IS_STATIC(spi_id) (false)
 #endif
 
 // Function to determine if the given tim_id is reserved for system use or not.
@@ -653,3 +689,7 @@
 #endif
 
 #define MICROPY_HW_USES_BOOTLOADER (MICROPY_HW_VTOR != 0x08000000)
+
+#ifndef MICROPY_HW_ETH_DMA_ATTRIBUTE
+#define MICROPY_HW_ETH_DMA_ATTRIBUTE __attribute__((aligned(16384)));
+#endif
