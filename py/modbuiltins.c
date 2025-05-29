@@ -140,29 +140,17 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     if (c >= 0x110000) {
         mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
     }
-<<<<<<< HEAD
-    return mp_obj_new_str_via_qstr((char *)str, len);
-    #elif MICROPY_PY_BUILTINS_STR_SJIS
-    mp_uint_t c = mp_obj_get_int(o_in);
-    uint8_t str[2];
-    int len = 0;
-
-    if (c < 0x100 && !(SJIS_IS_NONASCII(c))) {
-        *str = c;
-        len = 1;
-    } else if (c >= 0x8000 && c <= 0xffff) {
-        str[0] = (c >> 8);
-        str[1] = (c & 0xff);
-        len = 2;
-    } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range"));
-    }
-    return mp_obj_new_str_via_qstr((char *)str, len);
-=======
     VSTR_FIXED(buf, 4);
     vstr_add_char(&buf, c);
     return mp_obj_new_str_via_qstr(buf.buf, buf.len);
->>>>>>> v1.22.0
+    #elif MICROPY_PY_BUILTINS_STR_SJIS
+    mp_uint_t c = mp_obj_get_int(o_in);
+    if (c >= 0x10000) {
+        mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(0x10000)"));
+    }
+    VSTR_FIXED(buf, 4);
+    vstr_add_char(&buf, c);
+    return mp_obj_new_str_via_qstr(buf.buf, buf.len);
     #else
     mp_int_t ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0xff) {

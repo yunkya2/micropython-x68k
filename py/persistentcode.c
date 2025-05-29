@@ -645,15 +645,11 @@ STATIC void fd_print_strn(void *env, const char *str, size_t len) {
 
 void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename) {
     MP_THREAD_GIL_EXIT();
-<<<<<<< HEAD
 #ifdef O_BINARY
-    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
+    int fd = open(qstr_str(filename), O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
 #else
-    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-#endif
-=======
     int fd = open(qstr_str(filename), O_WRONLY | O_CREAT | O_TRUNC, 0644);
->>>>>>> v1.22.0
+#endif
     MP_THREAD_GIL_ENTER();
     if (fd < 0) {
         mp_raise_OSError_with_filename(errno, qstr_str(filename));
