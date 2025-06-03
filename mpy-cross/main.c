@@ -326,7 +326,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_RV32I;
                 } else if (strcmp(arch, "m68k") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_M68K;
-                    mp_dynamic_compiler.nlr_buf_num_regs = 0;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_M68K;
                 } else if (strcmp(arch, "debug") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_DEBUG;
                     mp_dynamic_compiler.nlr_buf_num_regs = 0;
