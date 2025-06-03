@@ -229,9 +229,19 @@ static int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_
     return 0;
 }
 
+static void value_range_error(emit_inline_asm_t *emit) {
+    emit_inline_m68k_error_msg(emit, MP_ERROR_TEXT("illegal value range"));
+}
+
+static void check_not_zero(emit_inline_asm_t *emit, uint32_t data) {
+    if (data == 0) {
+        value_range_error(emit);
+    }
+}
+
 static void check_value_range(emit_inline_asm_t *emit, uint32_t data, int32_t min, int32_t max) {
     if (!((int32_t)data >= min && (int32_t)data <= max)) {
-        emit_inline_m68k_error_msg(emit, MP_ERROR_TEXT("illegal value range"));
+        value_range_error(emit);
     }
 }
 
@@ -460,7 +470,6 @@ int get_ea_elem(emit_inline_asm_t *emit, mp_parse_node_t pn, ea_elem_t *ea) {
 #define OT_EA           (OT_DREG|OT_AREG|OT_AIND|OT_AIINC|OT_AIDEC|OT_AIDSP|OT_AIIDX|OT_PIDSP|OT_PIIDX|OT_ABS|OT_IMM)
 #define OT_EAALT        (OT_DREG|OT_AREG|OT_AIND|OT_AIINC|OT_AIDEC|OT_AIDSP|OT_AIIDX|0       |0       |OT_ABS|0     )
 #define OT_EADATA       (OT_DREG|0      |OT_AIND|OT_AIINC|OT_AIDEC|OT_AIDSP|OT_AIIDX|OT_PIDSP|OT_PIIDX|OT_ABS|OT_IMM)
-#define OT_EADAT2       (OT_DREG|0      |OT_AIND|OT_AIINC|OT_AIDEC|OT_AIDSP|OT_AIIDX|OT_PIDSP|OT_PIIDX|OT_ABS|0     )
 #define OT_EADALT       (OT_DREG|0      |OT_AIND|OT_AIINC|OT_AIDEC|OT_AIDSP|OT_AIIDX|0       |0       |OT_ABS|0     )
 #define OT_EAMALT       (0      |0      |OT_AIND|OT_AIINC|OT_AIDEC|OT_AIDSP|OT_AIIDX|0       |0       |OT_ABS|0     )
 #define OT_EACTL        (0      |0      |OT_AIND|0       |0       |OT_AIDSP|OT_AIIDX|OT_PIDSP|OT_PIIDX|OT_ABS|0     )
@@ -733,7 +742,7 @@ m68k_instr_table_t inst_table[] = {
     { "bchg",     L|B,    0x0040,   IN_BCHG,    OT_DREG|OT_IMM, OT_EADALT },
     { "bclr",     L|B,    0x0080,   IN_BCHG,    OT_DREG|OT_IMM, OT_EADALT },
     { "bset",     L|B,    0x00c0,   IN_BCHG,    OT_DREG|OT_IMM, OT_EADALT },
-    { "btst",     L|B,    0x0000,   IN_BCHG,    OT_DREG|OT_IMM, OT_EADAT2 },
+    { "btst",     L|B,    0x0000,   IN_BCHG,    OT_DREG|OT_IMM, OT_EADATA },
 
     { "mulu",     W,      0xc0c0,   IN_MULDIV,  OT_EADATA,      OT_DREG },
     { "muls",     W,      0xc1c0,   IN_MULDIV,  OT_EADATA,      OT_DREG },
@@ -755,7 +764,7 @@ m68k_instr_table_t inst_table[] = {
     { "ext",      L|W,    0x4800,   IN_EXT,     OT_DREG,        0 },
     { "cmpm",     L|W|B,  0xb108,   IN_CMPM,    OT_AIINC,       OT_AIINC },
     { "movem",    L|W,    0x4880,   IN_MOVEM,   OT_EACTL|OT_AIINC|OT_REGLIST, OT_EACALT|OT_AIDEC|OT_REGLIST },
-    { "movep",    W,      0x0108,   IN_MOVEP,   OT_DREG|OT_AIDSP, OT_DREG|OT_AIDSP },
+    { "movep",    L|W,    0x0108,   IN_MOVEP,   OT_DREG|OT_AIDSP, OT_DREG|OT_AIDSP },
 
     { "trap",     0,      0x4e40,   IN_TRAP,    OT_IMM,         0 },
     { "stop",     0,      0x4e72,   IN_STOP,    OT_IMM,         0 },
@@ -791,7 +800,7 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
     unsigned int i;
     const m68k_instr_table_t *inst;
     int size = -1;
-    int defsize = -1;
+    int sizebit = 0;
     int cc = 0;
 
     inst = inst_table;
@@ -811,8 +820,8 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
                     continue;
                 }
                 size = s - sz;
-                defsize = size;
-                if (!((1 << size) & inst->size)) {
+                sizebit = 1 << size;
+                if (!(sizebit & inst->size)) {
                     continue;
                 }
             } else {                        /* default size */
@@ -848,24 +857,34 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
         }
     }
 
-    if ((o1.type == OT_AREG || o2.type == OT_AREG) && defsize == 0) {
+    if ((o1.type == OT_AREG || o2.type == OT_AREG) && (sizebit & B)) {
         goto bad_operand;           /* address register byte access */
     }
 
     switch (inst->type) {
     case IN_MOVE:
         if (o1.type == OT_SPREG) {
-            if (o1.reg == 19 && o2.type == OT_AREG) {   /* move USP,An */
-                if (size != 2) {
+            switch (o1.reg) {
+            case 19:                /* move.l USP,An */
+                if (o2.type != OT_AREG) {
+                    goto bad_operand;
+                }
+                if (sizebit & ~L) {
                     goto unknown_op;
                 }
                 asm_m68k_op16(&emit->as, 0x4e68 | o2.reg);
                 return;
+
+            case 17:                /* move.b CCR,<ea> */
+                goto bad_operand;   /*.(not supported in 68000) */
+            case 18:                /* move.w SR,<ea> */
+                if (sizebit & ~W) {
+                    goto unknown_op;
+                }
+                break;
             }
-            if (defsize > 0 && defsize != 1) {  /* move SR,<ea> */
-                goto unknown_op;
-            }
-            if (o1.reg != 18 || !(o2.type & OT_EADALT)) {
+
+            if (!(o2.type & OT_EADALT)) {
                 goto bad_operand;
             }
             asm_m68k_op16(&emit->as, 0x40c0 | o2.ea);
@@ -873,16 +892,29 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
             return;
         }
         if (o2.type == OT_SPREG) {
-            if (o2.reg == 19 && o1.type == OT_AREG) {   /* move An,USP */
-                if (size != 2) {
+            switch (o2.reg) {
+            case 19:                /* move.l An,USP */
+                if (o1.type != OT_AREG) {
+                    goto bad_operand;
+                }
+                if (sizebit & ~L) {
                     goto unknown_op;
                 }
                 asm_m68k_op16(&emit->as, 0x4e60 | o1.reg);
                 return;
+
+            case 17:                /* move.b <ea>,CCR */
+                if (sizebit & ~B) {
+                    goto unknown_op;
+                }
+                break;
+            case 18:                /* move.w <ea>,SR */
+                if (sizebit & ~W) {
+                    goto unknown_op;
+                }
+                break;
             }
-            if (defsize > 0 && defsize != 1) {  /* move <ea>,CCR/SR */
-                goto unknown_op;
-            }
+
             if (!(o2.type & OT_EADATA)) {
                 goto bad_operand;
             }
@@ -939,14 +971,26 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
 
     case IN_ADDI:           /* OP.s #imm,<ea> */
         if (o2.type == OT_SPREG) {         /* ori/andi/eori to ccr/sr */
-            if (o2.reg == 17 || o2.reg == 18) {     /* CCR/SR */
-                asm_m68k_op16(&emit->as,
-                              inst->instr | ((o2.reg - 17) << 6) | 0x3c);
-                emit_inline_m68k_data(emit, 1, OR_SIZE, o1.data);
-                return;
-            } else {
+            switch (o2.reg) {
+            case 19:                /* USP */
                 goto bad_operand;
+
+            case 17:                /* OP.b #imm,CCR */
+                if (sizebit & ~B) {
+                    goto unknown_op;
+                }
+                break;
+            case 18:                /* OP.w #imm,SR */
+                if (sizebit & ~W) {
+                    goto unknown_op;
+                }
+                break;
             }
+
+            asm_m68k_op16(&emit->as,
+                          inst->instr | ((o2.reg - 17) << 6) | 0x3c);
+            emit_inline_m68k_data(emit, 1, OR_SIZE, o1.data);
+            return;
         }
         asm_m68k_op16(&emit->as,
                       inst->instr | (size << 6) | o2.ea);
@@ -982,6 +1026,7 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
             asm_m68k_op16(&emit->as, rel);
         } else {            /* bra.s */
             check_sbyte_range(emit, rel);
+            check_not_zero(emit, rel);
             asm_m68k_op16(&emit->as, 0x6000 | (cc << 8) | (rel & 0xff));
         }
         return;
@@ -993,7 +1038,7 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
         asm_m68k_op16(&emit->as, rel);
         return;
 
-    case IN_SCC:            /* OP <label> */
+    case IN_SCC:            /* OP <eal> */
         asm_m68k_op16(&emit->as, inst->instr | (cc << 8) | o1.ea);
         emit_inline_m68k_data(emit, size, r1, o1.data);
         return;
@@ -1006,7 +1051,7 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
 
     case IN_ROTSFT:         /* OP <ea> / Dx,Dy / #n,Dy */
         if (n_args == 1) {              /* <ea> */
-            if (defsize > 0 && defsize != 1) {
+            if (sizebit & ~W) {
                 goto unknown_op;
             }
             if (!(o1.type & OT_EAMALT)) {
@@ -1034,16 +1079,22 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
         return;
 
     case IN_BCHG:           /* OP Dx/#n,<ea> */
-        if (o1.type == OT_DREG) {       /* Dx,<ea> */
-            if (defsize > 0 && defsize != 2) {
+        if (o2.type == OT_DREG) {       /* OP.l Dx/#n,Dy */
+            if (sizebit & ~L) {
                 goto unknown_op;
             }
+        } else {                        /* OP.b Dx/#n,<ea> */
+            if (sizebit & ~B) {
+                goto unknown_op;
+            }
+        }
+        if (o1.type == OT_DREG) {       /* Dx,<ea> */
             asm_m68k_op16(&emit->as,
                           inst->instr | (o1.reg << 9) | (1 << 8) | o2.ea);
             emit_inline_m68k_data(emit, size, r2, o2.data);
-        } else {                        /* #n,<ea> */ 
-            if (defsize > 0 && defsize != 0) {
-                goto unknown_op;
+        } else {                        /* #n,<ea> */
+            if (o2.type == OT_IMM) {
+                goto unknown_op;        /* #n,#n .. NG */
             }
             asm_m68k_op16(&emit->as, inst->instr | (1 << 11) | o2.ea);
             asm_m68k_op16(&emit->as, o1.data & 0xff);
