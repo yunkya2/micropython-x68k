@@ -36,10 +36,12 @@ for a in range(10):
     g3.fill(x0, y0, x1, y1, c)
 
 g0x = g1x = g2y = g3y = 0
-while True:
-    # check shift key to exit
-    if x68k.iocs(x68k.i.B_SFTSNS):
+a = 0
+while (a := a + 1) < 500:
+    if x68k.iocs(x68k.i.B_SFTSNS) & 0x01:
         break
+    if x68k.iocs(x68k.i.B_SFTSNS) & 0x80:
+        a = 0
 
     # wait vblank
     x68k.vsync()

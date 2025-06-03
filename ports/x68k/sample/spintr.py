@@ -3,6 +3,7 @@ from random import randint
 from binascii import unhexlify
 from struct import pack
 import micropython
+import time
 micropython.alloc_emergency_exception_buf(100)
 
 def rgb(r,g,b):
@@ -79,9 +80,16 @@ a = Balls(s)
 
 x68k.curoff()
 with x68k.Super(), x68k.IntVSync(a.disp, a):
-    while True:
-        if x68k.iocs(x68k.i.B_SFTSNS):
+    t = 0
+    while (t := t + 1) < 500:
+        k = x68k.iocs(x68k.i.B_SFTSNS)
+        if k & 0x01:
             break
+        if k & 0x80:
+            t = 0
+
+        time.sleep_ms(10)
+
         x0 = randint(0,255)
         y0 = randint(0,255)
         x1 = randint(0,255)

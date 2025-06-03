@@ -64,9 +64,14 @@ for i in range(BALLS):
 
 x68k.curoff()
 
-while True:
-    if x68k.iocs(x68k.i.B_SFTSNS):
+t = 0
+while (t := t + 1) < 200:
+    k = x68k.iocs(x68k.i.B_SFTSNS)
+    if k & 0x01:
         break
+    if k & 0x80:
+        t = 0
+
     s.bgput(0,randint(0,31),randint(0,31),0x100)
     for i in range(BALLS):
         s.set(i,spx[i]+16,spy[i]+16,sppat[i],sppri[i], 0)

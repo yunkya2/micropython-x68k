@@ -86,9 +86,14 @@ def move(balls):
 
 x68k.curoff()
 with x68k.Super():
-    while True:
-        if x68k.iocs(x68k.i.B_SFTSNS):
+    t = 0
+    while (t := t + 1) < 500:
+        k = x68k.iocs(x68k.i.B_SFTSNS)
+        if k & 0x01:
             break
+        if k & 0x80:
+            t = 0
+
         x68k.vsync()
         move(balls)
 x68k.curon()

@@ -4,7 +4,13 @@ import random
 
 x68k.crtmod(0x10,True)
 
-for a in range(200):
+a = 0
+while (a := a + 1) < 200:
+    if x68k.iocs(x68k.i.B_SFTSNS) & 0x01:
+        break
+    if x68k.iocs(x68k.i.B_SFTSNS) & 0x80:
+        a = 0
+
     x = random.randint(0,767)
     y = random.randint(0,511)
     r = random.randint(1,250)

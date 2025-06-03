@@ -6,7 +6,13 @@ x68k.crtmod(14, True)
 with x68k.Super():
     fb = framebuf.FrameBuffer(x68k.GVRam(), 256, 256, framebuf.RGB565, 512)
 
-    for a in range(100):
+    a = 0
+    while (a := a + 1) < 100:
+        if x68k.iocs(x68k.i.B_SFTSNS) & 0x01:
+            break
+        if x68k.iocs(x68k.i.B_SFTSNS) & 0x80:
+            a = 0
+
         x0 = random.randint(0,255)
         y0 = random.randint(0,255)
         x1 = random.randint(0,255)
