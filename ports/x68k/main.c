@@ -59,6 +59,7 @@
 #include "input.h"
 
 // Command line options, with their defaults
+static bool compile_only = false;
 static uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
@@ -127,6 +128,7 @@ static void print_help(char **argv) {
         );
     int impl_opts_cnt = 0;
     printf(
+        "  compile-only                 -- parse and compile only\n"
         #if MICROPY_EMIT_NATIVE
         "  emit={bytecode,native,viper} -- set the default code emitter\n"
         #else
@@ -171,6 +173,8 @@ static void pre_process_options(int argc, char **argv) {
                     exit(invalid_args());
                 }
                 if (0) {
+                } else if (strcmp(argv[a + 1], "compile-only") == 0) {
+                    compile_only = true;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
                 #if MICROPY_EMIT_NATIVE
