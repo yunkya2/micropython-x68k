@@ -494,15 +494,3 @@ void nlr_jump_fail(void *val) {
     fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
 }
-
-#if !MICROPY_READER_VFS
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    mp_raise_OSError(MP_ENOENT);
-}
-#endif
-
-#if !MICROPY_VFS
-mp_import_stat_t mp_import_stat(const char *path) {
-    return MP_IMPORT_STAT_NO_EXIST;
-}
-#endif
