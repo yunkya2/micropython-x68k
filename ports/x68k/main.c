@@ -45,6 +45,7 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/objstr.h"
+#include "py/cstack.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
@@ -233,11 +234,22 @@ static void set_sys_argv(char *argv[], int argc, int start_arg) {
 
 #define PATHLIST_SEP_CHAR ';'
 
-MP_NOINLINE int main_(int argc, char **argv) {
-    // Define a reasonable stack limit to detect stack overflow.
-    mp_uint_t stack_limit = 30000;
-    mp_stack_set_limit(stack_limit);
+MP_NOINLINE int main_(int argc, char **argv);
 
+int main(int argc, char **argv) {
+    // Define a reasonable stack limit to detect stack overflow.
+    mp_uint_t stack_size = 30000;
+
+    // We should capture stack top ASAP after start, and it should be
+    // captured guaranteedly before any other stack variables are allocated.
+    // For this, actual main (renamed main_) should not be inlined into
+    // this function. main_() itself may have other functions inlined (with
+    // their own stack variables), that's why we need this main/main_ split.
+    mp_cstack_init_with_sp_here(stack_size);
+    return main_(argc, argv);
+}
+
+MP_NOINLINE int main_(int argc, char **argv) {
     pre_process_options(argc, argv);
 
     #if MICROPY_ENABLE_GC
@@ -479,11 +491,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     // printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
-}
-
-int main(int argc, char **argv) {
-    mp_stack_ctrl_init();
-    return main_(argc, argv);
 }
 
 void nlr_jump_fail(void *val) {
