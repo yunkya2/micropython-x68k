@@ -54,6 +54,7 @@
 // REPL conveniences.
 #define MICROPY_REPL_EMACS_WORDS_MOVE  (1)
 #define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE (1)
+#define MICROPY_USE_READLINE           (1)
 #define MICROPY_USE_READLINE_HISTORY   (1)
 #ifndef MICROPY_READLINE_HISTORY_SIZE
 #define MICROPY_READLINE_HISTORY_SIZE  (50)
@@ -133,7 +134,9 @@ typedef long mp_off_t;
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_VFS                 (1)
 #define MICROPY_READER_VFS          (1)
+#define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_VFS_POSIX           (0)
+#define MICROPY_READER_POSIX        (1)
 
 // VFS stat functions should return time values relative to 1970/1/1
 #define MICROPY_EPOCH_IS_1970       (1)
