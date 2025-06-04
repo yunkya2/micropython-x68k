@@ -464,11 +464,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     x68k_freefnc();
 
     #if MICROPY_PY_MICROPYTHON_MEM_INFO
-    #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag) {
         mp_micropython_mem_info(0, NULL);
     }
-    #endif
     #endif
 
 #if 0       // for rapid termination
