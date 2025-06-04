@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2023 Yuichi Nakamura
+ * Copyright (c) 2023-2025 Yuichi Nakamura
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,36 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "input.h"
+
+#if MICROPY_USE_READLINE == 1
 #include "shared/readline/readline.h"
+#endif
+
+#if MICROPY_USE_READLINE == 0
+char *prompt(char *p) {
+    // simple read string
+    static char buf[256];
+    fputs(p, stdout);
+    fflush(stdout);
+    char *s = fgets(buf, sizeof(buf), stdin);
+    if (!s) {
+        return NULL;
+    }
+    int l = strlen(buf);
+    if (buf[l - 1] == '\n') {
+        buf[l - 1] = 0;
+    } else {
+        l++;
+    }
+    char *line = malloc(l);
+    memcpy(line, buf, l);
+    return line;
+}
+#endif
 
 void prompt_read_history(void) {
     #if MICROPY_USE_READLINE_HISTORY
+    #if MICROPY_USE_READLINE == 1
     readline_init0(); // will clear history pointers
     char *histfile = getenv("MICROPYHIST");
     if (histfile != NULL) {
@@ -71,10 +97,12 @@ void prompt_read_history(void) {
         vstr_clear(&vstr);
     }
     #endif
+    #endif
 }
 
 void prompt_write_history(void) {
     #if MICROPY_USE_READLINE_HISTORY
+    #if MICROPY_USE_READLINE == 1
     char *histfile = getenv("MICROPYHIST");
     if (histfile != NULL) {
         vstr_t vstr;
@@ -93,5 +121,6 @@ void prompt_write_history(void) {
             close(fd);
         }
     }
+    #endif
     #endif
 }
