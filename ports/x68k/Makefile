@@ -23,6 +23,7 @@ LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 
 SRC_C = \
 	main.c \
+	gccollect.c \
 	mphalport.c \
 	vfs_human.c \
 	vfs_human_file.c \
