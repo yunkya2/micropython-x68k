@@ -26,18 +26,27 @@
  * THE SOFTWARE.
  */
 
-#include <unistd.h>
 #include <stdint.h>
-#include <limits.h>
-#include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
+
 #include <x68k/dos.h>
 
-#include "py/builtin.h"
 #include "py/compile.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
+#include "py/repl.h"
 #include "py/gc.h"
+#include "py/objstr.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/stackctrl.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
@@ -46,6 +55,7 @@
 #include "extmod/vfs.h"
 #include "vfs_human.h"
 #include "mphalport.h"
+#include "genhdr/mpversion.h"
 #include "input.h"
 
 // Command line options, with their defaults
