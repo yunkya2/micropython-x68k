@@ -112,9 +112,216 @@ static int handle_uncaught_exception(mp_obj_base_t *exc) {
     return 1;
 }
 
+#define LEX_SRC_STR (1)
+#define LEX_SRC_VSTR (2)
+#define LEX_SRC_FILENAME (3)
+#define LEX_SRC_STDIN (4)
+
+// Returns standard error codes: 0 for success, 1 for all other errors,
+// except if FORCED_EXIT bit is set then script raised SystemExit and the
+// value of the exit is in the lower 8 bits of the return value
+static int execute_from_lexer(int source_kind, const void *source, mp_parse_input_kind_t input_kind, bool is_repl) {
+    mp_hal_set_interrupt_char(CHAR_CTRL_C);
+
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        // create lexer based on source kind
+        mp_lexer_t *lex;
+        if (source_kind == LEX_SRC_STR) {
+            const char *line = source;
+            lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
+        } else if (source_kind == LEX_SRC_VSTR) {
+            const vstr_t *vstr = source;
+            lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, false);
+        } else if (source_kind == LEX_SRC_FILENAME) {
+            const char *filename = (const char *)source;
+            lex = mp_lexer_new_from_file(qstr_from_str(filename));
+        } else { // LEX_SRC_STDIN
+            lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
+        }
+
+        qstr source_name = lex->source_name;
+
+        #if MICROPY_PY___FILE__
+        if (input_kind == MP_PARSE_FILE_INPUT) {
+            mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+        }
+        #endif
+
+        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+
+        #if defined(MICROPY_UNIX_COVERAGE)
+        // allow to print the parse tree in the coverage build
+        if (mp_verbose_flag >= 3) {
+            printf("----------------\n");
+            mp_parse_node_print(&mp_plat_print, parse_tree.root, 0);
+            printf("----------------\n");
+        }
+        #endif
+
+        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
+
+        if (!compile_only) {
+            // execute it
+            mp_call_function_0(module_fun);
+        }
+
+        mp_hal_set_interrupt_char(-1);
+        mp_handle_pending(true);
+        nlr_pop();
+        return 0;
+
+    } else {
+        // uncaught exception
+        mp_hal_set_interrupt_char(-1);
+        mp_handle_pending(false);
+        return handle_uncaught_exception(nlr.ret_val);
+    }
+}
+
+#if MICROPY_USE_READLINE == 1
+#include "shared/readline/readline.h"
+#else
+static char *strjoin(const char *s1, int sep_char, const char *s2) {
+    int l1 = strlen(s1);
+    int l2 = strlen(s2);
+    char *s = malloc(l1 + l2 + 2);
+    memcpy(s, s1, l1);
+    if (sep_char != 0) {
+        s[l1] = sep_char;
+        l1 += 1;
+    }
+    memcpy(s + l1, s2, l2);
+    s[l1 + l2] = 0;
+    return s;
+}
+#endif
+
+static int do_repl(void) {
+    mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
+    mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
+    mp_hal_stdout_tx_str("\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
+
+    #if MICROPY_USE_READLINE == 1
+
+    // use MicroPython supplied readline
+
+    vstr_t line;
+    vstr_init(&line, 16);
+    for (;;) {
+        mp_hal_stdio_mode_raw();
+
+    input_restart:
+        vstr_reset(&line);
+        int ret = readline(&line, mp_repl_get_ps1());
+        mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
+
+        if (ret == CHAR_CTRL_C) {
+            // cancel input
+            mp_hal_stdout_tx_str("\r\n");
+            goto input_restart;
+        } else if (ret == CHAR_CTRL_D) {
+            // EOF
+            printf("\n");
+            mp_hal_stdio_mode_orig();
+            vstr_clear(&line);
+            return 0;
+        } else if (ret == CHAR_CTRL_E) {
+            // paste mode
+            mp_hal_stdout_tx_str("\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== ");
+            vstr_reset(&line);
+            for (;;) {
+                char c = mp_hal_stdin_rx_chr();
+                if (c == CHAR_CTRL_C) {
+                    // cancel everything
+                    mp_hal_stdout_tx_str("\n");
+                    goto input_restart;
+                } else if (c == CHAR_CTRL_D) {
+                    // end of input
+                    mp_hal_stdout_tx_str("\n");
+                    break;
+                } else {
+                    // add char to buffer and echo
+                    vstr_add_byte(&line, c);
+                    if (c == '\r') {
+                        mp_hal_stdout_tx_str("\n=== ");
+                    } else {
+                        mp_hal_stdout_tx_strn(&c, 1);
+                    }
+                }
+            }
+            parse_input_kind = MP_PARSE_FILE_INPUT;
+        } else if (line.len == 0) {
+            if (ret != 0) {
+                printf("\n");
+            }
+            goto input_restart;
+        } else {
+            // got a line with non-zero length, see if it needs continuing
+            while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
+                vstr_add_byte(&line, '\n');
+                ret = readline(&line, mp_repl_get_ps2());
+                if (ret == CHAR_CTRL_C) {
+                    // cancel everything
+                    printf("\n");
+                    goto input_restart;
+                } else if (ret == CHAR_CTRL_D) {
+                    // stop entering compound statement
+                    break;
+                }
+            }
+        }
+
+        mp_hal_stdio_mode_orig();
+
+        ret = execute_from_lexer(LEX_SRC_VSTR, &line, parse_input_kind, true);
+        if (ret & FORCED_EXIT) {
+            return ret;
+        }
+    }
+
+    #else
+
+    // use simple readline
+
+    for (;;) {
+        char *line = prompt((char *)mp_repl_get_ps1());
+        if (line == NULL) {
+            // EOF
+            return 0;
+        }
+        while (mp_repl_continue_with_input(line)) {
+            char *line2 = prompt((char *)mp_repl_get_ps2());
+            if (line2 == NULL) {
+                break;
+            }
+            char *line3 = strjoin(line, '\n', line2);
+            free(line);
+            free(line2);
+            line = line3;
+        }
+
+        int ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
+        free(line);
+        if (ret & FORCED_EXIT) {
+            return ret;
+        }
+    }
+
+    #endif
+}
+
+static int do_file(const char *file) {
+    return execute_from_lexer(LEX_SRC_FILENAME, file, MP_PARSE_FILE_INPUT, false);
+}
+
+static int do_str(const char *str) {
+    return execute_from_lexer(LEX_SRC_STR, str, MP_PARSE_FILE_INPUT, false);
+}
+
 static void print_help(char **argv) {
     printf(
-        "usage: %s [<opts>] [-X <implopt>] [-m <module> | <filename>]\n"
+        "usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
         "Options:\n"
         "--version : show version information\n"
         "-h : print this help message\n"
@@ -347,6 +554,14 @@ MP_NOINLINE int main_(int argc, char **argv) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-i") == 0) {
                 inspect = true;
+            } else if (strcmp(argv[a], "-c") == 0) {
+                if (a + 1 >= argc) {
+                    return invalid_args();
+                }
+                set_sys_argv(argv, a + 1, a); // The -c becomes first item of sys.argv, as in CPython
+                set_sys_argv(argv, argc, a + 2); // Then what comes after the command
+                ret = do_str(argv[a + 1]);
+                break;
             } else if (strcmp(argv[a], "-m") == 0) {
                 if (a + 1 >= argc) {
                     return invalid_args();
@@ -433,7 +648,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             free(pathbuf);
 #endif
             set_sys_argv(argv, argc, a);
-            ret = pyexec_file(argv[a]);
+            ret = do_file(argv[a]);
             break;
         }
     }
@@ -445,9 +660,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     if (ret == NOTHING_EXECUTED || inspect) {
         prompt_read_history();
         mp_hal_setfnckey();
-        do {
-            ret = pyexec_friendly_repl();
-        } while (ret == 0);
+        ret = do_repl();
         mp_hal_restorefnckey();
         prompt_write_history();
     }

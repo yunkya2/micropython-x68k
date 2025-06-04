@@ -40,7 +40,6 @@ SRC_C = \
 	modx68kxarray.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_generic.c \
-	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
 	$(SRC_MOD) \
 	$(SHARED_SRC_C_EXTRA)

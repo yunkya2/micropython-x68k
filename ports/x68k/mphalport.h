@@ -26,5 +26,8 @@
 
 void mp_hal_set_interrupt_char(char c);
 
+void mp_hal_stdio_mode_raw(void);
+void mp_hal_stdio_mode_orig(void);
+
 void mp_hal_setfnckey(void);
 void mp_hal_restorefnckey(void);

@@ -98,6 +98,9 @@ void mp_hal_set_interrupt_char(char c) {
     }
 }
 
+void mp_hal_stdio_mode_raw(void) {} 
+void mp_hal_stdio_mode_orig(void) {}
+
 static struct {
     int fno;
     const char *keydef;
