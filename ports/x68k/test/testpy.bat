@@ -1,4 +1,3 @@
-echo off
 set MPY=..\build\micropython.x
 
 screen
