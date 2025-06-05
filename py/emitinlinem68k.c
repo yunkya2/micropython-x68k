@@ -825,7 +825,7 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
                     continue;
                 }
             } else {                        /* default size */
-                size = (inst->size & L) ? 2 : ((inst->size & W) ? 1 : 0);
+                size = (inst->size & W) ? 1 : ((inst->size & L) ? 2 : 0);
             }
             break;
         }
