@@ -875,7 +875,7 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
                 asm_m68k_op16(&emit->as, 0x4e68 | o2.reg);
                 return;
 
-            case 17:                /* move.b CCR,<ea> */
+            case 17:                /* move.w CCR,<ea> */
                 goto bad_operand;   /*.(not supported in 68000) */
             case 18:                /* move.w SR,<ea> */
                 if (sizebit & ~W) {
@@ -903,8 +903,8 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
                 asm_m68k_op16(&emit->as, 0x4e60 | o1.reg);
                 return;
 
-            case 17:                /* move.b <ea>,CCR */
-                if (sizebit & ~B) {
+            case 17:                /* move.w <ea>,CCR */
+                if (sizebit & ~W) {
                     goto unknown_op;
                 }
                 break;
@@ -915,7 +915,7 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
                 break;
             }
 
-            if (!(o2.type & OT_EADATA)) {
+            if (!(o1.type & OT_EADATA)) {
                 goto bad_operand;
             }
             asm_m68k_op16(&emit->as,
@@ -1027,7 +1027,7 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
         } else {            /* bra.s */
             check_sbyte_range(emit, rel);
             check_not_zero(emit, rel);
-            asm_m68k_op16(&emit->as, 0x6000 | (cc << 8) | (rel & 0xff));
+            asm_m68k_op16(&emit->as, inst->instr | (cc << 8) | (rel & 0xff));
         }
         return;
 
@@ -1057,7 +1057,7 @@ static void emit_inline_m68k_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_ar
             if (!(o1.type & OT_EAMALT)) {
                 goto bad_operand;
             }
-            asm_m68k_op16(&emit->as, inst->instr | 0xc0 | o1.ea);
+            asm_m68k_op16(&emit->as, (inst->instr & ~0x3f) | ((inst->instr & 0x18) << 6) | 0xc0 | o1.ea);
             emit_inline_m68k_data(emit, size, r1, o1.data);
         } else {
             if (o2.type != OT_DREG) {
