@@ -2,9 +2,7 @@
 
 MicroPython のシャープ X680x0 向け移植です。
 
-[MicroPython](https://micropython.org/) v1.21.0 をベースにしています。
-* v1.20.0 からの差分は [こちら](https://github.com/micropython/micropython/releases/tag/v1.21.0) を参照してください。
-* v1.21.0 は組み込みモジュール名の扱いが従来のバージョンから変更されているため、モジュールの import に関して注意が必要な場合があります。「[モジュールのimportに関しての注意点](#モジュールのimportに関しての注意点)」を参照してください。
+[MicroPython](https://micropython.org/) v1.25.0 をベースにしています。
 
 ## ビルド方法
 
@@ -23,11 +21,13 @@ $ make
 * X680x0 環境上で micropython.x を実行します。
 
   ```
-  micropython [ -h ] [ -i ] [ -O<level> ] [ -X <option> ] [ -m <module> | <script> ] [ <args> ]
+  micropython [ -h ] [ -i ] [ -O<level> ] [ -X <option> ] [ -c <command> | -m <module> | <script> ] [ <args> ]
   ```
 
 ### 起動オプション
 
+* `-c <command>`
+  * `<command>` のコードを実行します。コードは1つ以上の Python ステートメントです。
 * `-m <module>`
   * モジュール `<module>` を実行します。モジュールはカレントディレクトリまたは環境変数 `MICROPYPATH` で指定されるパスに存在している必要があります。
 * `<script>`
@@ -48,6 +48,7 @@ $ make
   * 最適化レベルを設定します。の `O` の後に数字を付けるか、 `O` を複数回繰り返すことによりレベルを示すことができます。たとえば `-O3` と `-OOO` は同じです。
 * `-X <option>`
   * 追加の処理系固有のオプションを指定します。可能なオプションは次のとおりです:
+  * `-X compile-only` はコマンド、モジュール、スクリプトをコンパイルしますが、実行しません。
   * `-X emit={bytecode,native,viper}` はデフォルトのコードエミッタを設定します。
   * `-X heapsize=<n>[w][K|M]` はガベージコレクターのヒープサイズを設定します。接尾辞 `w` はバイトではなくワードを意味します。 `K` は x1024、 `M` は x1024x1024 を意味します。
 
@@ -62,7 +63,7 @@ $ make
 
 ## X680x0固有ライブラリ
 
-MicroPython 自体の使い方は [公式ドキュメント](https://micropython-docs-ja.readthedocs.io/ja/v1.21.0ja/index.html) を参照してください。
+MicroPython 自体の使い方は [公式ドキュメント](https://micropython-docs-ja.readthedocs.io/ja/v1.25.0ja/index.html) を参照してください。
 
 X680x0版では、加えて以下のライブラリをサポートしています。
 
@@ -118,7 +119,6 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
       x68k.dos(x68k.d.GETDPB,struct.pack('hl',0,uctypes.addressof(buf)))
       ```
     * DOS _GETDPBは「1ワードのドライブ番号」「94バイトのバッファを指す1ロングワードのポインタ」をこの順にスタックに積んで呼び出す仕様なので、`struct.pack`のフォーマット文字列`'hl'` によってこのデータ配置を指定しています。
-  * 注) 上記コード例でバッファオブジェクトのアドレスを取得するために使用していた `addressof()` 関数は `uctypes` モジュールに含まれていて従来は `ctypes` モジュールという別名での呼び出しも可能でしたが、MicroPython v1.21.0 での仕様変更に伴い `uctypes` でのみ呼び出せるようになりました。v1.20.0 以前で `ctypes` を import してるコードは `uctypes` に変更する必要があります。
 * `x68k.mpyaddr()`
   * MicroPython本体のメモリ上の開始アドレスを返します。デバッグ用です。
 * `x68k.loadfnc(file [,flag])`
@@ -259,7 +259,7 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 
 #### クラス `IntVSync`, `IntRaster`, `IntTimerD`, `IntOpm` -- 割り込みハンドラ登録
 
-* これらのクラスによって、Python言語で書かれた割り込みハンドラを登録することができます。割り込みハンドラには通常の関数と異なるさまざまな制約が存在します。詳細は[公式ドキュメント](https://micropython-docs-ja.readthedocs.io/ja/v1.21.0ja/reference/isr_rules.html)を参照してください。
+* これらのクラスによって、Python言語で書かれた割り込みハンドラを登録することができます。割り込みハンドラには通常の関数と異なるさまざまな制約が存在します。詳細は[公式ドキュメント](https://micropython-docs-ja.readthedocs.io/ja/v1.25.0ja/reference/isr_rules.html)を参照してください。
   * 割り込みハンドラは後述のネイティブコードまたはバイパーコード、インラインアセンブラを使用するなどして、出来るだけ早く処理を完了させるようにしてください。
 * class `x68k.IntVSync([callback, arg, mode, disp, cycle])`
   * IntVSync オブジェクトを構築します。このオブジェクトで垂直同期による割り込みハンドラを登録します。
@@ -364,7 +364,7 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 
 * MicroPythonのネイティブ/バイパーコードエミッター機能をサポートしています。
 * `@micropython.native` または `@micropython.viper` デコレータを付けた関数では通常のバイトコードの代わりにCPUの機械語コードが出力され、それをCPUが直接実行することで実行速度を高速化します。
-* 詳細は公式ドキュメントの [ネイティブコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.21.0ja/reference/speed_python.html#the-native-code-emitter) および [バイパーコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.21.0ja/reference/speed_python.html#the-viper-code-emitter) を参照してください。
+* 詳細は公式ドキュメントの [ネイティブコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.25.0ja/reference/speed_python.html#the-native-code-emitter) および [バイパーコードエミッター](https://micropython-docs-ja.readthedocs.io/ja/v1.25.0ja/reference/speed_python.html#the-viper-code-emitter) を参照してください。
 
 ## `mpyconv` プリコンパイラ
 
@@ -372,16 +372,7 @@ MicroPython向けLチカのコードをそのままX680x0版で動かすため�
 * `mpyconv.x` はバイトコードへのコンパイルを事前に行うことで、プログラムの実行開始までの時間を短縮することができます。通常のPythonモジュールの `.py`ファイルを元に、`.mpy`ファイルを生成します。
   * 例: `mpyconv sample/sprite.py`
     * sprite.py と同じディレクトリに sprite.mpy を生成します。
-* (以前のバージョンでは `mpycross.x` という名前でしたが、`mpyconv.x` に変更されました。また、ネイティブコードのアーキテクチャはデフォルトで `m68k` が設定されます)
-
-## モジュールのimportに関しての注意点
-
-* MicroPython v1.21.0 で組み込みモジュールの命名に関するポリシーが変更されたため、v1.20.0 以前向けの既存のソースコードに対する互換性が一部失われています。既存のコードがエラーになる場合は以下の点について確認してみてください。
-* v1.20.0 まで、MicroPython の組み込みモジュールの名前には "u" が付いていました(usys, uio, uos 等)。これは通常のPython (CPython) の同名の組み込みモジュールのサブセットであることを表すとともに、CPython との互換性向上のために "u" の付かない名前も別名として import できるという仕様になっていました。\
-v1.21.0 より、これらの組み込みモジュールの名前はほとんどが "u" の付かないものに変更され、逆に "u" の付く名前の方が別名として扱われるようになりました。
-* この変更の唯一の例外が `uctypes` モジュールです。このモジュールは CPython の `ctypes` モジュールと互換性がないため、従来 `ctypes` を別名として import することができたのが今回の変更でできなくなりました。\
-`uctypes` モジュールにはバッファオブジェクトのアドレスを取得する `addressof()` 関数があり、X68k 版の DOS コール呼び出し等のために使われることが多かったのですが、この変更に伴い `import ctypes` を行っているコードは動作しなくなります。`import uctypes` への変更が必要です。
-* また v1.21.0 より、組み込みモジュールについては import の際にファイルシステムの同名のディレクトリの検索を行わなくなりました。Human68k システムディスクに `SYS` ディレクトリが存在するため、従来はルートディレクトリで `import sys` を行うと組み込みの `sys` モジュールが import されないという問題がありましたが、仕様変更によりこの問題は発生しなくなっています。
+* (ネイティブコードのアーキテクチャはデフォルトで `m68k` が設定されます)
 
 ## X-BASIC 外部関数ファイル読み込み機能
 
