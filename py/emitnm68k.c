@@ -10,7 +10,7 @@
 #include "py/asmm68k.h"
 
 // Word indices of REG_LOCAL_x in nlr_buf_t
-#define NLR_BUF_IDX_LOCAL_1 (3) // d4
+#define NLR_BUF_IDX_LOCAL_1 (6) // d4
 
 // m68k needs a table to know how many args a given function has
 static byte mp_f_n_args[MP_F_NUMBER_OF] = {
