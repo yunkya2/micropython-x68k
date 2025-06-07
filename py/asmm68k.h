@@ -31,6 +31,8 @@
 #include "py/asmbase.h"
 #include "py/persistentcode.h"
 
+#define ASM_BIG_ENDIAN      (1)
+
 #define ASM_M68K_REG_D0     (0)
 #define ASM_M68K_REG_D1     (1)
 #define ASM_M68K_REG_D2     (2)

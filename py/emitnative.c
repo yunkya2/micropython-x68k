@@ -309,6 +309,9 @@ emit_t *EXPORT_FUN(new)(mp_emit_common_t * emit_common, mp_obj_t *error_slot, ui
     emit->exc_stack = m_new(exc_stack_entry_t, emit->exc_stack_alloc);
     emit->as = m_new0(ASM_T, 1);
     mp_asm_base_init(&emit->as->base, max_num_labels);
+    #ifdef ASM_BIG_ENDIAN
+    emit->as->base.endian = true;            /* big endian */
+    #endif
     return emit;
 }
 
@@ -594,9 +597,9 @@ static void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             asm_x86_mov_arg_to_r32(emit->as, 2, REG_PARENT_ARG_3);
             asm_x86_mov_arg_to_r32(emit->as, 3, REG_PARENT_ARG_4);
             #elif N_M68K
-            asm_m68k_mov_args_to_r32(emit->as, 0, (1 << REG_PARENT_ARG_1) | 
-                                                  (1 << REG_PARENT_ARG_2) | 
-                                                  (1 << REG_PARENT_ARG_3) | 
+            asm_m68k_mov_args_to_r32(emit->as, 0, (1 << REG_PARENT_ARG_1) |
+                                                  (1 << REG_PARENT_ARG_2) |
+                                                  (1 << REG_PARENT_ARG_3) |
                                                   (1 << REG_PARENT_ARG_4));
             #endif
 
