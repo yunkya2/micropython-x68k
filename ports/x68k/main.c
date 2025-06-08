@@ -631,22 +631,31 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 return invalid_args();
             }
         } else {
-#if 0
-            char *pathbuf = malloc(MICROPY_ALLOC_PATH_MAX);
-            char *basedir = realpath(argv[a], pathbuf);
-            if (basedir == NULL) {
+            struct dos_nameckbuf nameckbuf;
+            char *basedir = nameckbuf.drive;
+            if (_dos_nameck(argv[a], &nameckbuf) != 0 || _dos_chmod(argv[a], -1) < 0) {
                 mp_printf(&mp_stderr_print, "%s: can't open file '%s': [Errno %d] %s\n", argv[0], argv[a], errno, strerror(errno));
-                free(pathbuf);
                 // CPython exits with 2 in such case
                 ret = 2;
                 break;
             }
 
+            /* replace '\' -> '/' */
+            for (char *p = basedir; *p != '\0'; p++) {
+                if (*p == '\\') {
+                    *p = '/';
+                }
+            #if MICROPY_PY_BUILTINS_STR_SJIS
+                else if (SJIS_IS_NONASCII(*p)) {
+                    p++;
+                }
+            #endif
+            }
+
             // Set base dir of the script as first entry in sys.path.
             char *p = strrchr(basedir, '/');
             mp_obj_list_store(mp_sys_path, MP_OBJ_NEW_SMALL_INT(0), mp_obj_new_str_via_qstr(basedir, p - basedir));
-            free(pathbuf);
-#endif
+
             set_sys_argv(argv, argc, a);
             ret = do_file(argv[a]);
             break;
