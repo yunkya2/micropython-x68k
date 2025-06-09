@@ -1,9 +1,9 @@
 #!/bin/sh
 # MicroPython for X680x0 inline assmembler test script
 RUN68=run68
-MPY="${RUN68} ../build/micropython.x"
-MPC="${RUN68} ../mpyconv/mpyconv.x"
-MPT="../../../tools/mpy-tool.py"
+MPY="${RUN68} ../../build/micropython.x"
+MPC="${RUN68} ../../mpyconv/mpyconv.x"
+MPT="../../../../tools/mpy-tool.py"
 
 rm -f *.mpy *.bin.*.xd *.o *.s *.dis
 
