@@ -1,0 +1,26 @@
+# X68k版で例外扱いするテストケース
+basics/builtin_help             helpメッセージ違い
+basics/bytes_add_endian         endian違い
+basics/bytes_compare3           expファイルに余計なコメントがある
+basics/exception_chain          expファイルにwarningメッセージが入っている
+basics/string_escape            SJIS対応
+basics/string_upperlow          改行コードの違い
+basics/struct1                  word alignmentの違い
+basics/struct_endian            endian違い
+
+extmod/json_loads               SJIS対応
+extmod/machine1                 cpythonにmachineモジュールがない
+extmod/time_time_ns             timer精度の問題
+
+float/float_divmod              演算精度の問題
+float/inf_nan_arith             -0.0がない
+float/math_domain               -0.0がない
+
+import/import_file              実行時のパスの差異
+
+io/file1                        Human68kの問題?(O_WRONLYでopenしたファイルもreadできてしまう)
+io/file_readinto                Human68kの問題?(O_WRONLYでopenしたファイルもreadできてしまう)
+io/file_readline                Human68kの問題?(O_WRONLYでopenしたファイルもreadできてしまう)
+
+micropython/ringio_async        async非対応
+micropython/viper_ptr16_load    endian違い
