@@ -47,12 +47,6 @@ for TYPE in ${TYPES}; do
 
 	for a in ${LOG}/*.py;do
 		n=$(basename -s .py $a)
-		case $n in
-		async*)
-			continue
-			;;
-		esac
-
 		found=""
 		while read name comment ; do
 			if [ "$name" = "${TYPE}/$n" ]; then

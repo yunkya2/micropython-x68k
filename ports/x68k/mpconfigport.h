@@ -92,8 +92,8 @@
 #define MICROPY_PY_TIME_TIME_TIME_NS   (1)
 #define MICROPY_PY_TIME_INCLUDEFILE    "ports/x68k/modtime.c"
 
-// Disable the "select" module.
-#define MICROPY_PY_SELECT              (0)
+// Enable the "select" module.
+#define MICROPY_PY_SELECT              (1)
 
 // Enable the "machine" module.
 #define MICROPY_PY_MACHINE             (1)
@@ -172,9 +172,8 @@ extern const struct _mp_print_t mp_stderr_print;
 
 #define MICROPY_SCHEDULER_STATIC_NODES          (1)
 
-#define MICROPY_PY_SELECT                       (0)
-#define MICROPY_PY_ASYNC_AWAIT                  (0)
-#define MICROPY_PY_ASYNCIO                      (0)
+#define MICROPY_PY_ASYNC_AWAIT                  (1)
+#define MICROPY_PY_ASYNCIO                      (1)
 
 #define MICROPY_PY_BUILTINS_STR_UNICODE         (0)
 #define MICROPY_PY_BUILTINS_STR_SJIS            (1)

@@ -1,7 +1,13 @@
 include ../../py/mkenv.mk
 
+export LC_MESSAGES=C
+
 CROSS ?= 1
 
+# Use the default frozen manifest, variants may override this.
+FROZEN_MANIFEST ?= manifest.py
+
+# include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
@@ -9,17 +15,22 @@ ifeq ($(CROSS), 1)
 CROSS_COMPILE ?= m68k-xelf-
 endif
 
-export LC_MESSAGES=C
-
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
 LD = $(CC)
-CFLAGS += $(INC) -Os -g
-CFLAGS += -Wall -Werror
+CFLAGS += $(INC) -Wall -Werror
 LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
-#CFLAGS += -DNDEBUG
+
+# Tune for Debugging or Optimization
+CFLAGS += -g  # always include debug info in the ELF
+ifeq ($(DEBUG), 1)
+CFLAGS += -O0
+else
+CFLAGS += -Os -DNDEBUG
+CFLAGS += -fdata-sections -ffunction-sections
+endif
 
 SRC_C = \
 	main.c \
@@ -38,11 +49,15 @@ SRC_C = \
 	modx68kint.c \
 	modx68kfnc.c \
 	modx68kxarray.c \
-	shared/readline/readline.c \
-	shared/runtime/gchelper_generic.c \
-	shared/runtime/stdout_helpers.c \
 	$(SRC_MOD) \
 	$(SHARED_SRC_C_EXTRA)
+
+SHARED_SRC_C += $(addprefix shared/,\
+	readline/readline.c \
+	runtime/gchelper_generic.c \
+	runtime/stdout_helpers.c \
+	$(SHARED_SRC_C_EXTRA) \
+	)
 
 SRC_CXX += \
 	$(SRC_MOD_CXX)
@@ -55,10 +70,7 @@ OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 
 TARGET := $(BUILD)/micropython
 TARGETELF = $(TARGET)
