@@ -14,9 +14,15 @@
 
 ### サンプルコードの実行テスト
 
-* X68k上で test.py と test.mpy を実行します
+* X68k上で testpy.bat と testmpy.bat を実行します
 * sample/ 以下にあるサンプルコードを一通り実行します
-* test.mpy は同じコードを一旦 mpyconv.x でバイトコードに変換してから実行します
+* testmpy.bat は同じコードを一旦 mpyconv.x でバイトコードに変換してから実行します
+
+### シフトJISのテスト
+
+* X68k上で tesetsjis.batを実行します。
+* クロス環境上で testsjis.sh を実行します。
+* `### SJIS test OK ###` と表示されれば正常です
 
 ### X-BASIC 外部関数の実行テスト
 

@@ -1,6 +1,6 @@
 all:
 	./testasm.sh
-	./checksjis.sh
+	./testsjis.sh
 
 clean:
 	-rm -f *.mpy *.bin *.xd *.s *.o *.dis
