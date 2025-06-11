@@ -700,6 +700,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     mp_deinit();
 
+    // restore LED state
+    __asm__ volatile(
+        "moveq.l #0x07,%%d0\n" // IOCS _LEDSET
+        "trap #15\n"
+        : : : "d0"
+    );
+
     #if MICROPY_ENABLE_GC && !defined(NDEBUG)
     // We don't really need to free memory since we are about to exit the
     // process, but doing so helps to find memory leaks.

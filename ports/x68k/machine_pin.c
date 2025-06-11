@@ -33,22 +33,32 @@
 
 #define GPIO_MODE_OUT (1)
 
+static uint8_t ledstat = 0;
+
+static inline void ledctrl(void) {
+    __asm__ volatile(
+        "move.b %0,%%d1\n"
+        "moveq.l #0x06,%%d0\n" // IOCS_LEDCTRL
+        "trap #15\n"
+        : : "m"(ledstat) : "d0", "d1"
+    );
+}
+
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
-    uint32_t id;
-    bool stat;
+    uint32_t mask;
 } machine_pin_obj_t;
 
 extern const mp_obj_type_t machine_pin_type;
 
 static const machine_pin_obj_t machine_pin_obj[7] = {
-    {{&machine_pin_type}, 0},
-    {{&machine_pin_type}, 1},
-    {{&machine_pin_type}, 2},
-    {{&machine_pin_type}, 3},
-    {{&machine_pin_type}, 4},
-    {{&machine_pin_type}, 5},
-    {{&machine_pin_type}, 6},
+    {{&machine_pin_type}, 1 << 0},
+    {{&machine_pin_type}, 1 << 1},
+    {{&machine_pin_type}, 1 << 2},
+    {{&machine_pin_type}, 1 << 3},
+    {{&machine_pin_type}, 1 << 4},
+    {{&machine_pin_type}, 1 << 5},
+    {{&machine_pin_type}, 1 << 6},
 };
 
 void machine_pin_init(void) {
@@ -56,22 +66,35 @@ void machine_pin_init(void) {
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "Pin(%u)", self->id);
+    mp_printf(print, "Pin(%u)", self - machine_pin_obj);
 }
 
 // pin.init(mode)
-static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
+enum {
+    ARG_mode, ARG_value
+};
+static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_mode,  MP_ARG_OBJ,                  {.u_rom_obj = MP_ROM_NONE}},
+        { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
     };
 
+
+static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    // get initial value of pin
+    if (args[ARG_value].u_obj != mp_const_none) {
+        bool value = mp_obj_is_true(args[ARG_value].u_obj);
+        ledstat &= ~self->mask;
+        ledstat |= value ? self->mask : 0;
+        ledctrl();
+    }
+
     // configure mode
-    if (args[0].u_obj != mp_const_none) {
-        mp_int_t mode = mp_obj_get_int(args[0].u_obj);
+    if (args[ARG_mode].u_obj != mp_const_none) {
+        mp_int_t mode = mp_obj_get_int(args[ARG_mode].u_obj);
         (void)(mode);
     }
 
@@ -105,12 +128,13 @@ static mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     machine_pin_obj_t *self = self_in;
     if (n_args == 0) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT(self->stat);
+        return MP_OBJ_NEW_SMALL_INT((ledstat & self->mask) ? 1 : 0);
     } else {
         // set pin
         bool value = mp_obj_is_true(args[0]);
-        self->stat = value;
-        _iocs_ledmod(self->id, self->stat);
+        ledstat &= ~self->mask;
+        ledstat |= value ? self->mask : 0;
+        ledctrl();
         return mp_const_none;
     }
 }
@@ -130,8 +154,8 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_
 // pin.low()
 static mp_obj_t machine_pin_low(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    self->stat = 0;
-    _iocs_ledmod(self->id, 0);
+    ledstat &= ~self->mask;
+    ledctrl();
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
@@ -139,8 +163,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 // pin.high()
 static mp_obj_t machine_pin_high(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    self->stat = 1;
-    _iocs_ledmod(self->id, 1);
+    ledstat |= self->mask;
+    ledctrl();
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
@@ -148,8 +172,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
 // pin.toggle()
 static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    self->stat = 1 - self->stat;
-    _iocs_ledmod(self->id, self->stat);
+    ledstat ^= self->mask;
+    ledctrl();
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
