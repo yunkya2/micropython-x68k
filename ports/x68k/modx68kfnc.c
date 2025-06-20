@@ -231,7 +231,7 @@ static mp_obj_t x68k_callfncentry(size_t n_args, const mp_obj_t *args) {
 #endif
 
     if (result != 0) {
-        mp_raise_ValueError(errmsg);
+        mp_raise_ValueError(MP_ERROR_TEXT(errmsg));
     }
 
     // convert return value
